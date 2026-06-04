@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from "astro:content";
+import StackBadge from "./StackBadge.astro";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  wrapperClass?: string;
+}
+const { project, wrapperClass = "card__tags" } = Astro.props;
+const data = project.data;
+
+// Company tag (change-set 1.4): shown on the Analytics & BI achievements, which
+// are the collection entries that carry an `employer`. Short display names.
+const COMPANY: Record<string, string> = {
+  "telstra-consultant": "Telstra",
+  "telstra-assistant-manager": "Telstra",
+  resolve: "RESOLVE",
+  prolearn: "ProLearn Solutions LLP",
+  aihi: "AIHI",
+};
+const company =
+  data.employer && data.themes.includes("analytics-bi") ? COMPANY[data.employer] : null;
+
+// Free-text tool tags that are not one of the four stack pages (e.g. Tableau).
+const extra = data.extraTools ?? [];
+---
+
+<div class={wrapperClass}>
+  {
+    extra.map((t) => (
+      <span class="stackbadge">
+        <span class="stackbadge__dot" aria-hidden="true" />
+        {t}
+      </span>
+    ))
+  }
+  {data.tools.map((t) => <StackBadge tool={t} />)}
+  {
+    company && (
+      <span class="stackbadge stackbadge--company">
+        <svg class="stackbadge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 21h18M6 21V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v16M16 21V9h3a1 1 0 0 1 1 1v11" />
+          <path d="M9 7h.01M12 7h.01M9 11h.01M12 11h.01M9 15h.01M12 15h.01" />
+        </svg>
+        {company}
+      </span>
+    )
+  }
+</div>

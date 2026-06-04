@@ -1,0 +1,457 @@
+---
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/400-italic.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/500-italic.css";
+import "@fontsource/roboto/700.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+import "../styles/lemmino.css";
+
+import { ViewTransitions } from "astro:transitions";
+import { SITE_URL } from "../config/site";
+import profile from "../data/profile.json";
+import Nav from "../components/Nav.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+const desc = description ?? profile.tagline_default;
+const canonical = new URL(Astro.url.pathname, SITE_URL).href;
+const ogImage = new URL("/og-image.svg", SITE_URL).href;
+const rightsTail = profile.work_rights.replace(/^Full-time/, "");
+const isHome = Astro.url.pathname === "/";
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      (function () {
+        document.documentElement.classList.add("js");
+        try {
+          var t = localStorage.getItem("theme");
+          if (t !== "light" && t !== "dark") {
+            t = "dark"; // LEMMiNO: dark is the primary theme; honour a stored choice otherwise
+          }
+          document.documentElement.setAttribute("data-theme", t);
+          localStorage.setItem("theme", t); // persist so every page + navigation agrees
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+
+    <title>{title}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0e0e10" />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="en_AU" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <ViewTransitions />
+  </head>
+
+  <body class={isHome ? "has-intro at-top" : undefined}>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <Nav />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div>
+          <p class="footer__brand">Jatin Jassi</p>
+          <p class="footer__rights"><strong>Full-time</strong>{rightsTail}</p>
+        </div>
+        <nav class="footer__links" aria-label="Footer">
+          <a href={`mailto:${profile.email}`}>{profile.email}</a>
+          <a href={profile.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+        </nav>
+        <p class="footer__legal">
+          © {new Date().getFullYear()} Jatin Jassi · Sydney, NSW · Built with Astro
+        </p>
+      </div>
+    </footer>
+
+    <!-- Copy-confirmation toast (themed, auto-dismiss). Lives once at the body root. -->
+    <div class="toast" role="status" aria-live="polite" data-toast>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 6 9 17l-5-5"></path>
+      </svg>
+      <span data-toast-msg></span>
+    </div>
+
+    <script>
+      function initThemeToggle() {
+        const btn = document.querySelector("[data-theme-toggle]");
+        if (!btn) return;
+        btn.addEventListener("click", () => {
+          const cur = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+          const next = cur === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("theme", next);
+          } catch (e) {}
+        });
+      }
+
+      function initNav() {
+        const toggle = document.querySelector("[data-nav-toggle]");
+        const links = document.querySelector("[data-nav-links]");
+        if (toggle && links) {
+          toggle.addEventListener("click", () => {
+            const open = links.classList.toggle("is-open");
+            toggle.setAttribute("aria-expanded", String(open));
+            toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+          });
+          links.querySelectorAll("a").forEach((a) => {
+            a.addEventListener("click", () => {
+              links.classList.remove("is-open");
+              toggle.setAttribute("aria-expanded", "false");
+            });
+          });
+        }
+        const dd = document.querySelector("[data-dropdown]");
+        if (dd) {
+          document.addEventListener("click", (e) => {
+            if (dd.open && !dd.contains(e.target)) dd.open = false;
+          });
+        }
+      }
+
+      // Nested Projects dropdown: each category button opens its submenu (a left
+      // flyout on desktop, an inline accordion on mobile). One open at a time.
+      function initProjectsFlyout() {
+        const cats = Array.from(document.querySelectorAll("[data-flyout]"));
+        if (!cats.length) return;
+        const panels = {};
+        document.querySelectorAll("[data-flyout-panel]").forEach((p) => {
+          panels[p.getAttribute("data-flyout-panel")] = p;
+        });
+        function closeAll() {
+          cats.forEach((c) => c.setAttribute("aria-expanded", "false"));
+          Object.keys(panels).forEach((k) => (panels[k].hidden = true));
+        }
+        cats.forEach((cat) => {
+          cat.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const key = cat.getAttribute("data-flyout");
+            const willOpen = cat.getAttribute("aria-expanded") !== "true";
+            closeAll();
+            if (willOpen) {
+              cat.setAttribute("aria-expanded", "true");
+              if (panels[key]) panels[key].hidden = false;
+            }
+          });
+        });
+        const dd = document.querySelector("[data-dropdown]");
+        if (dd) dd.addEventListener("toggle", () => { if (!dd.open) closeAll(); });
+      }
+
+      function initLensToggle() {
+        const group = document.querySelector("[data-lens-toggle]");
+        if (!group) return;
+        const params = new URLSearchParams(window.location.search);
+        let active = params.get("lens") === "technical" ? "technical" : "business";
+        function show(which) {
+          active = which;
+          group.querySelectorAll(".lens-toggle__btn").forEach((b) => {
+            b.setAttribute("aria-pressed", String(b.dataset.lens === which));
+          });
+          document.querySelectorAll("[data-lens-view]").forEach((v) => {
+            v.hidden = v.dataset.lensView !== which;
+          });
+        }
+        group.querySelectorAll(".lens-toggle__btn").forEach((b) => {
+          b.addEventListener("click", () => show(b.dataset.lens));
+        });
+        show(active);
+      }
+
+      function initContactCopy() {
+        const btn = document.querySelector("[data-copy-email]");
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+          const email = btn.getAttribute("data-copy-email") || "";
+          try {
+            await navigator.clipboard.writeText(email);
+          } catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = email;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "absolute";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+            } catch (e2) {}
+            document.body.removeChild(ta);
+          }
+          const label = btn.querySelector("[data-copy-label]");
+          if (label) {
+            const prev = label.textContent;
+            label.textContent = "Copied";
+            btn.classList.add("is-copied");
+            window.setTimeout(() => {
+              label.textContent = prev;
+              btn.classList.remove("is-copied");
+            }, 1600);
+          }
+        });
+      }
+
+      function initReveal() {
+        const items = document.querySelectorAll("[data-reveal]");
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce || !("IntersectionObserver" in window)) {
+          items.forEach((el) => el.classList.add("is-visible"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.08 }
+        );
+        items.forEach((el) => io.observe(el));
+      }
+
+      // Re-apply the saved theme after each View-Transition swap. Astro copies the
+      // incoming (static) document's <html> attributes onto the persistent element,
+      // which would otherwise drop the runtime data-theme and revert to the CSS
+      // default mid-navigation. Keeps the theme consistent across every page.
+      function applyTheme() {
+        var t;
+        try {
+          t = localStorage.getItem("theme");
+        } catch (e) {}
+        if (t !== "light" && t !== "dark") t = "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      }
+
+      // Home section index: pop-out toggle + scroll-spy active highlighting.
+      let spyCleanup = null;
+      function initScrollSpy() {
+        if (spyCleanup) {
+          spyCleanup();
+          spyCleanup = null;
+        }
+        const spy = document.querySelector("[data-scrollspy]");
+        if (!spy) return;
+        const toggle = spy.querySelector("[data-scrollspy-toggle]");
+        const links = Array.from(spy.querySelectorAll("[data-spy-link]"));
+        const sections = links
+          .map((a) => document.getElementById(a.getAttribute("data-spy-link")))
+          .filter(Boolean);
+        if (!toggle || !sections.length) return;
+
+        function setOpen(open) {
+          spy.classList.toggle("is-open", open);
+          toggle.setAttribute("aria-expanded", String(open));
+          toggle.setAttribute("aria-label", open ? "Close section index" : "Open section index");
+        }
+        function onToggle() {
+          setOpen(!spy.classList.contains("is-open"));
+        }
+        function onKey(e) {
+          if (e.key === "Escape") setOpen(false);
+        }
+        toggle.addEventListener("click", onToggle);
+        // The index stays open when an option is clicked (change-set): only the
+        // arrow (or Escape) collapses it, so it is not dismissed on navigation.
+        document.addEventListener("keydown", onKey);
+
+        // Active section = the last one whose top has passed a line 30% down the
+        // viewport (a robust scroll-spy that does not bias toward short sections).
+        let ticking = false;
+        function update() {
+          ticking = false;
+          const line = window.innerHeight * 0.3;
+          let activeId = sections[0].id;
+          for (const s of sections) {
+            if (s.getBoundingClientRect().top <= line) activeId = s.id;
+            else break;
+          }
+          if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+            activeId = sections[sections.length - 1].id;
+          }
+          links.forEach((a) => {
+            const on = a.getAttribute("data-spy-link") === activeId;
+            a.classList.toggle("is-active", on);
+            if (on) a.setAttribute("aria-current", "true");
+            else a.removeAttribute("aria-current");
+          });
+        }
+        function onScroll() {
+          if (!ticking) {
+            ticking = true;
+            window.requestAnimationFrame(update);
+          }
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll, { passive: true });
+        update();
+
+        spyCleanup = function () {
+          toggle.removeEventListener("click", onToggle);
+          document.removeEventListener("keydown", onKey);
+          window.removeEventListener("scroll", onScroll);
+          window.removeEventListener("resize", onScroll);
+        };
+      }
+
+      // Copy-to-clipboard buttons that confirm with a themed toast (auto-dismiss 2s).
+      function initEmailToast() {
+        const btns = document.querySelectorAll("[data-copy-email-toast]");
+        if (!btns.length) return;
+        const toast = document.querySelector("[data-toast]");
+        let toastTimer;
+        async function copy(text) {
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "absolute";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+            } catch (e2) {}
+            document.body.removeChild(ta);
+          }
+        }
+        function showToast(msg) {
+          if (!toast) return;
+          const label = toast.querySelector("[data-toast-msg]");
+          if (label) label.textContent = msg;
+          toast.classList.add("is-visible");
+          window.clearTimeout(toastTimer);
+          toastTimer = window.setTimeout(() => {
+            toast.classList.remove("is-visible");
+          }, 2000);
+        }
+        btns.forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await copy(btn.getAttribute("data-copy-email-toast") || "");
+            showToast("Email copied in clipboard");
+          });
+        });
+      }
+
+      let introCleanup = null;
+      function initIntro() {
+        if (introCleanup) {
+          introCleanup();
+          introCleanup = null;
+        }
+        const body = document.body;
+        const intro = document.querySelector(".intro");
+        if (!intro) {
+          body.classList.remove("has-intro", "at-top");
+          body.style.removeProperty("--intro-progress");
+          return;
+        }
+        body.classList.add("has-intro");
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const arrow = intro.querySelector("[data-intro-scroll]");
+        let idleTimer;
+
+        function onScroll() {
+          const y = window.scrollY || 0;
+          const h = window.innerHeight || 1;
+          const progress = Math.min(y / (h * 0.85), 1);
+          body.style.setProperty("--intro-progress", progress.toFixed(3));
+          body.classList.toggle("at-top", y < 8);
+        }
+        function showArrow() {
+          if (arrow && (window.scrollY || 0) < 8) arrow.classList.add("is-visible");
+        }
+        function resetIdle() {
+          if (arrow) arrow.classList.remove("is-visible");
+          window.clearTimeout(idleTimer);
+          if (!reduce && (window.scrollY || 0) < 8) idleTimer = window.setTimeout(showArrow, 4000);
+        }
+        function onScrollAll() {
+          onScroll();
+          resetIdle();
+        }
+        function onArrowClick() {
+          window.scrollTo({ top: window.innerHeight, behavior: reduce ? "auto" : "smooth" });
+        }
+
+        onScroll();
+        resetIdle();
+        window.addEventListener("scroll", onScrollAll, { passive: true });
+        if (arrow) arrow.addEventListener("click", onArrowClick);
+
+        introCleanup = function () {
+          window.removeEventListener("scroll", onScrollAll);
+          window.clearTimeout(idleTimer);
+          if (arrow) arrow.removeEventListener("click", onArrowClick);
+        };
+      }
+
+      function init() {
+        applyTheme();
+        initThemeToggle();
+        initNav();
+        initProjectsFlyout();
+        initLensToggle();
+        initContactCopy();
+        initEmailToast();
+        initReveal();
+        initIntro();
+        initScrollSpy();
+      }
+
+      document.addEventListener("astro:page-load", init);
+      // On a View-Transition swap, Astro copies the incoming static <html>
+      // attributes onto the persistent element, dropping the runtime classes the
+      // head script set. Re-add `js` (gates progressive-enhancement CSS such as
+      // the section index, the intro nav-hide and the scroll reveals) and re-apply
+      // the theme, so both survive every client-side navigation.
+      document.addEventListener("astro:after-swap", () => {
+        document.documentElement.classList.add("js");
+        applyTheme();
+      });
+    </script>
+
+    <script>
+      import "../scripts/lemmino.js";
+    </script>
+  </body>
+</html>

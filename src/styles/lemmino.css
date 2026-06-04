@@ -1,0 +1,104 @@
+/* ============================================================
+   LEMMiNO presentation + motion layer (LEMMINO-THEME.md §4).
+   Layered after tokens.css and global.css. Purely additive:
+   film grain, vignette, serif tracking, accent hover glow, the
+   toned-down variant for dense pages, responsive and reduced
+   motion. The site's existing [data-reveal] scroll reveals and
+   .load-stagger hero entrance already provide the cinematic
+   reveal/entrance, so no parallel reveal system is introduced.
+   ============================================================ */
+
+/* ---------- Film grain (animated, all devices) ---------- */
+.lemmino-grain {
+  position: fixed;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: lemmino-grain-shift 8s steps(10) infinite;
+  will-change: transform;
+}
+@keyframes lemmino-grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -25%); }
+  40% { transform: translate(21%, 25%); }
+  50% { transform: translate(-25%, 10%); }
+  60% { transform: translate(15%, 0); }
+  70% { transform: translate(0, 15%); }
+  80% { transform: translate(25%, 35%); }
+  90% { transform: translate(-10%, 10%); }
+}
+:root[data-theme="light"] .lemmino-grain { opacity: 0.02; mix-blend-mode: multiply; }
+
+/* ---------- Vignette (dark theme only) ---------- */
+.lemmino-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
+}
+:root[data-theme="light"] .lemmino-vignette { display: none; }
+
+/* ---------- Display tracking ----------
+   The display face is Roboto (change-set). A hair of positive tracking keeps the
+   title-case headings and the wordmark from feeling tight. Sizes/weights unchanged. */
+h1, h2, h3, h4 { letter-spacing: 0.01em; }
+.brand,
+.footer__brand,
+.hero__name,
+.hero__tagline,
+.cluster__label,
+.timeline__title,
+.edu-card__qual,
+.foundation__title,
+.detail__value,
+.lens-lead {
+  letter-spacing: 0.012em;
+}
+.hero__name { line-height: 1; }
+
+/* ---------- Ultraviolet hover glow ----------
+   The single sparse accent, used as a restrained halo on interactive cards
+   (LEMMiNO frame-overlay intent, achieved without changing element structure). */
+.card:hover,
+.cluster:hover,
+.cert-card:hover {
+  box-shadow: var(--shadow-lg), 0 0 36px -14px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* ---------- Toned-down variant for dense pages (LEMMiNO §4) ----------
+   Project detail routes (body.toned-down) and the certifications section
+   (#certifications.toned-down) keep the grain at lower opacity and calm the
+   reveal motion to spacing-only for readability. */
+body.toned-down .lemmino-grain { opacity: 0.025; }
+.js body.toned-down [data-reveal],
+.js #certifications.toned-down [data-reveal] {
+  transform: none;
+  transition: opacity 0.3s ease;
+}
+
+/* ---------- Responsive: tablet ---------- */
+@media (max-width: 1024px) {
+  :root { --section-pad: 4rem; }
+}
+
+/* ---------- Responsive: mobile ---------- */
+@media (max-width: 768px) {
+  :root { --dur-slow: 700ms; }      /* slightly quicker reveals on small screens */
+  .lemmino-grain { opacity: 0.03; } /* a touch lower for small-screen legibility, still animated */
+}
+
+/* ---------- Accessibility: reduced motion ----------
+   Keep the static grain texture but stop its jitter; global.css already neutralises
+   the reveal/entrance transitions and animations. */
+@media (prefers-reduced-motion: reduce) {
+  .lemmino-grain { animation: none; }
+}

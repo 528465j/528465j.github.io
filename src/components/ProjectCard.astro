@@ -1,0 +1,59 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ProjectTags from "./ProjectTags.astro";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  kicker?: string;
+  // When set on a dual-lens project, the card teaser uses that framing and the
+  // link carries ?lens= (ARCHITECTURE.md section 11).
+  lens?: "business" | "technical";
+}
+const { project, kicker, lens } = Astro.props;
+const { data, slug } = project;
+
+const useLens = data.lenses && lens ? lens : null;
+const valueText = useLens ? data.lenses![useLens].lead : data.valueLine;
+const href = useLens ? `/projects/${slug}/?lens=${useLens}` : `/projects/${slug}/`;
+
+const metrics = data.metrics ?? [];
+const headline = metrics[0];
+const extra = metrics.slice(1);
+---
+
+<a class="card" href={href} data-reveal>
+  <div class="card__top">
+    <span class="card__kicker">{kicker ?? "Project"}</span>
+    {data.featured && <span class="card__featured">Featured</span>}
+  </div>
+
+  <h3 class="card__title">{data.title}</h3>
+  <p class="card__value">{valueText}</p>
+
+  {
+    headline && (
+      <div class="card__metric">
+        <span class="card__metric-value">{headline}</span>
+      </div>
+    )
+  }
+
+  {
+    extra.length > 0 && (
+      <div class="card__metrics-extra">
+        {extra.map((m) => (
+          <span class="metric-chip">{m}</span>
+        ))}
+      </div>
+    )
+  }
+
+  <ProjectTags project={project} wrapperClass="card__tags" />
+
+  <span class="card__cta">
+    View project
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6"></path>
+    </svg>
+  </span>
+</a>

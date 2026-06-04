@@ -1,0 +1,112 @@
+/* Design tokens for the LEMMiNO documentary direction (LEMMINO-THEME.md).
+   Dark near-black warm canvas (primary), a single sparse ultraviolet accent and
+   a rare gold highlight. White + ultraviolet light theme. Roboto display
+   (change-set override of the LEMMiNO serif), Inter body, JetBrains Mono figures.
+
+   The LEMMiNO palette is bound onto the variable names the existing components
+   already read (--bg, --surface, --ink, --accent, --line, --shadow*, etc.), so
+   the whole site reskins from this one file with no per-component edits. Dark is
+   the default (:root); light is the alternate (:root[data-theme="light"]). */
+
+:root {
+  /* Type families.
+     Display face is Roboto (the wordmark "Jatin Jassi" and every heading that
+     shares its style), per the change-set. This deliberately overrides the
+     LEMMiNO Cormorant Garamond display and ARCHITECTURE.md §14's "avoid Roboto".
+     Sizes and weights are unchanged: only the family is swapped. */
+  --font-display: "Roboto", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Fluid type scale (min 360px -> max ~1280px) */
+  --step--1: clamp(0.82rem, 0.79rem + 0.13vw, 0.9rem);
+  --step-0: clamp(0.95rem, 0.91rem + 0.2vw, 1.05rem);
+  --step-1: clamp(1.15rem, 1.06rem + 0.4vw, 1.4rem);
+  --step-2: clamp(1.4rem, 1.24rem + 0.7vw, 1.95rem);
+  --step-3: clamp(1.7rem, 1.42rem + 1.2vw, 2.7rem);
+  --step-4: clamp(2.05rem, 1.55rem + 2.2vw, 3.7rem);
+  --step-5: clamp(2.5rem, 1.6rem + 4vw, 5.2rem);
+
+  /* Spacing scale */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --section-pad: clamp(4rem, 10vw, 8rem);
+
+  /* Structure */
+  --container: 72rem;
+  --container-narrow: 52rem;
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --border: 1px solid var(--line);
+
+  /* Motion: slow, cinematic ease-out */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 240ms;
+  --dur: 480ms;
+  --dur-base: 800ms;
+  --dur-slow: 1000ms;
+
+  /* Dark theme (primary / default) */
+  --bg: #0e0e10;            /* warm near-black void */
+  --bg-grain: #15141a;      /* faint lift for the body gradient */
+  --surface: #17171a;
+  --surface-2: #1f1e24;
+  --ink: #ede8dc;           /* warm cream off-white */
+  --ink-2: #aba498;         /* muted warm */
+  --ink-3: #8c8578;         /* captions, meta, mono */
+  --line: rgba(237, 232, 220, 0.12);
+  --line-strong: rgba(237, 232, 220, 0.22);
+  --accent: #9b80da;        /* lightened ultraviolet, AA on dark: text/links/borders */
+  --accent-strong: #b9a6e8; /* brighter violet for hover and fills on dark */
+  --accent-deep: #654ea3;   /* deep fill */
+  --accent-soft: #211b30;   /* violet-tinted dark fill */
+  --accent-contrast: #100a1c; /* near-black violet for text/icons on accent fills */
+  --gold: #c9a24b;          /* rare warm highlight, used sparingly */
+  /* Work-rights chip (green) and capability tags */
+  --rights-text: #6ee7a3;
+  --rights-bg: #0f2a1c;
+  --rights-border: #2f9e63;
+  --tag-border: #6b6453;
+  --tag-text: #d8d2c6;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.55);
+  --focus: 0 0 0 3px var(--accent-soft), 0 0 0 5px var(--accent);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-grain: #f4f2f8;       /* faint violet-tinted */
+  --surface: #faf8fd;
+  --surface-2: #f0ecf8;
+  --ink: #1a1a1f;
+  --ink-2: #56505f;
+  --ink-3: #7a7385;
+  --line: rgba(101, 78, 163, 0.16);
+  --line-strong: rgba(101, 78, 163, 0.3);
+  --accent: #654ea3;         /* ultraviolet, AA 6.62:1 on white */
+  --accent-strong: #4a3680;  /* darker hover on light */
+  --accent-deep: #590098;
+  --accent-soft: #ece7f7;    /* pale violet fill */
+  --accent-contrast: #ffffff;
+  --gold: #8a6d1f;           /* text-safe gold on white */
+  --rights-text: #15803d;
+  --rights-bg: #dcfce7;
+  --rights-border: #16a34a;
+  --tag-border: #1a1a1f;     /* keeps the bold 2px tag treatment (change-set) */
+  --tag-text: #1a1a1f;
+  --shadow-sm: 0 1px 2px rgba(14, 17, 22, 0.05), 0 1px 3px rgba(14, 17, 22, 0.04);
+  --shadow: 0 6px 18px rgba(14, 17, 22, 0.07), 0 2px 6px rgba(14, 17, 22, 0.05);
+  --shadow-lg: 0 20px 48px rgba(14, 17, 22, 0.12);
+  --focus: 0 0 0 3px var(--accent-soft), 0 0 0 5px var(--accent);
+  color-scheme: light;
+}

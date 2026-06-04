@@ -1,0 +1,58 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import ContactBlock from "../../components/ContactBlock.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+import profile from "../../data/profile.json";
+
+export async function getStaticPaths() {
+  return profile.experience.map((job) => ({ params: { slug: job.slug }, props: { job } }));
+}
+
+const { job } = Astro.props;
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.employer === job.slug)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const themeKicker = (themes: string[]) =>
+  themes[0] === "technical-ai-ml" ? "Technical · AI / ML" : "Analytics · BI";
+---
+
+<Base
+  title={`${job.title}, ${job.employer} | Jatin Jassi`}
+  description={`Achievements and projects from ${job.title} at ${job.employer}.`}
+>
+  <section class="page-hero">
+    <div class="container">
+      <Breadcrumb
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "Experience", href: "/#experience" },
+          { label: job.title },
+        ]}
+      />
+      <span class="eyebrow">Achievements</span>
+      <h1>{job.title}</h1>
+      <p class="page-hero__lead"><b>{job.employer}</b> · {job.location} · {job.dates}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      {
+        projects.length > 0 ? (
+          <div class="projects">
+            {projects.map((p) => (
+              <ProjectCard project={p} kicker={themeKicker(p.data.themes)} />
+            ))}
+          </div>
+        ) : (
+          <p class="evidence__note">Work from this role is presented across the project pages.</p>
+        )
+      }
+    </div>
+  </section>
+
+  <ContactBlock />
+</Base>

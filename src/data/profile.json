@@ -1,0 +1,64 @@
+{
+  "name": "Jatin Jassi",
+  "tagline_default": "Data and analytics professional: telecommunications, healthcare and consulting",
+  "location": "Sydney, NSW (open to relocating nationally)",
+  "work_rights": "Full-time unrestricted working rights, Subclass 485 Temporary Graduate Visa, valid until January 2028.",
+  "email": "jatinjassi930@gmail.com",
+  "linkedin": "https://www.linkedin.com/in/jatin-j-b9205815b/",
+  "education": [
+    {
+      "qualification": "Master of Business Analytics",
+      "institution": "Macquarie University, Sydney",
+      "date": "Dec 2024",
+      "logo": "/logos/macquarie.png"
+    },
+    {
+      "qualification": "Bachelor of Arts, Economics",
+      "institution": "University of Delhi, New Delhi",
+      "date": "May 2019",
+      "logo": "/logos/delhi.png"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Google Data Analytics Professional Certificate",
+      "issuer": "Google",
+      "date": "Jan 2022",
+      "id": "XDE4XZ8FRN6G",
+      "logo": "/logos/google.png"
+    },
+    {
+      "name": "Data Analytics Job Simulation",
+      "issuer": "Deloitte",
+      "date": "Mar 2025",
+      "id": "AdLA2stQyaL42xv8u",
+      "logo": "/logos/deloitte.png"
+    },
+    {
+      "name": "Advanced Excel",
+      "issuer": "Nucleus Computers Ltd",
+      "date": "Jan 2020",
+      "id": "TECH/012182",
+      "logo": "/logos/excel.png"
+    },
+    {
+      "name": "Introduction to Psychology",
+      "issuer": "Yale University",
+      "date": "Mar 2020",
+      "id": "RUWGZDN8A46R",
+      "logo": "/logos/yale.png"
+    }
+  ],
+  "experience": [
+    { "slug": "telstra-assistant-manager", "title": "Assistant Manager", "employer": "Telstra Group Limited", "location": "Sydney, Australia", "dates": "Apr 2026 - Present" },
+    { "slug": "telstra-consultant", "title": "Consultant", "employer": "Telstra Group Limited", "location": "Sydney, Australia", "dates": "Oct 2024 - Apr 2026" },
+    { "slug": "aihi", "title": "Data Analysis and Research Assistant", "employer": "Australian Institute of Health Innovation", "location": "Sydney, Australia", "dates": "Feb 2024 - Jul 2024" },
+    { "slug": "resolve", "title": "Data Analyst", "employer": "RESOLVE", "location": "New Delhi, India", "dates": "Feb 2021 - Mar 2022" },
+    { "slug": "prolearn", "title": "Associate Data Analyst", "employer": "ProLearn Solutions LLP", "location": "Noida, India", "dates": "Apr 2019 - Feb 2021" }
+  ],
+  "foundation": {
+    "title": "Postgraduate analytics foundation",
+    "context": "Master of Business Analytics, Macquarie University",
+    "body": "Across the Master of Business Analytics, completed a series of applied analytics projects spanning predictive modelling (including sales forecasting), customer segmentation and statistical analysis applied to business problems such as customer retention, market-trend identification and process optimisation. Each piece paired the technical method with a plain-English summary written for non-technical decision-makers."
+  }
+}

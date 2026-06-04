@@ -1,0 +1,155 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import ContactBlock from "../../components/ContactBlock.astro";
+import ProjectTags from "../../components/ProjectTags.astro";
+import LensToggle from "../../components/LensToggle.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((p) => ({ params: { slug: p.slug }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await project.render();
+const data = project.data;
+
+const ev = data.evidence;
+const urlReady = !!ev.url && ev.url !== "TO BE PROVIDED";
+
+const backHref = data.themes[0] === "technical-ai-ml" ? "/technical-ai-ml/" : "/analytics-bi/";
+const backLabel = data.themes[0] === "technical-ai-ml" ? "Technical, AI & ML" : "Analytics & BI";
+const kicker = data.themes[0] === "technical-ai-ml" ? "Technical · AI / ML" : "Analytics · BI";
+const hasLenses = !!data.lenses;
+---
+
+<Base title={`${data.title} | Jatin Jassi`} description={data.valueLine}>
+  <article class="detail">
+    <div class="container">
+      <Breadcrumb
+        crumbs={[
+          { label: "Home", href: "/" },
+          { label: "By theme" },
+          { label: backLabel, href: backHref },
+          { label: data.title },
+        ]}
+      />
+
+      <span class="eyebrow">{kicker}</span>
+      <h1 class="detail__title">{data.title}</h1>
+      <p class="detail__value">{data.valueLine}</p>
+
+      <ProjectTags project={project} wrapperClass="detail__tags" />
+    </div>
+
+    {
+      data.diagram && (
+        <div class="container">
+          <figure class="diagram" data-reveal>
+            <img src={data.diagram} alt={`Architecture diagram for ${data.title}`} loading="lazy" />
+            <figcaption class="diagram__cap">Self-authored architecture diagram.</figcaption>
+          </figure>
+        </div>
+      )
+    }
+
+    <div class="container detail__layout">
+      <div>
+        {hasLenses && <LensToggle />}
+
+        {
+          hasLenses && (
+            <div class="lens-frame">
+              <div class="lens-view" data-lens-view="business">
+                <p class="lens-lead">{data.lenses!.business.lead}</p>
+                <ul class="lens-highlights">
+                  {data.lenses!.business.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+              </div>
+              <div class="lens-view" data-lens-view="technical" hidden>
+                <p class="lens-lead">{data.lenses!.technical.lead}</p>
+                <ul class="lens-highlights">
+                  {data.lenses!.technical.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )
+        }
+
+        <div class="prose" style={hasLenses ? "margin-top: var(--space-xl)" : ""}>
+          <p class="block-label">{hasLenses ? "The study" : "Overview"}</p>
+          <Content />
+        </div>
+      </div>
+
+      <aside class="detail__panel" data-reveal>
+        {
+          data.metrics.length > 0 && (
+            <div>
+              <p class="block-label">Outcomes</p>
+              <ul class="metrics-list">
+                {data.metrics.map((m) => (
+                  <li>{m}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <div>
+          <p class="block-label">Evidence</p>
+
+          {
+            ev.type === "confidential" && (
+              <p class="evidence__confidential">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Confidential as per company policy
+              </p>
+            )
+          }
+
+          {
+            (ev.type === "repo" || ev.type === "link") && urlReady && (
+              <a class="btn btn--primary" href={ev.url} target="_blank" rel="noopener">
+                {ev.type === "repo" ? "View repository" : "Open project"}
+                <svg class="btn__arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M7 17 17 7M7 7h10v10"></path>
+                </svg>
+              </a>
+            )
+          }
+
+          {
+            (ev.type === "repo" || ev.type === "link") && !urlReady && (
+              <span class="evidence__pending">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+                Sharing link pending
+              </span>
+            )
+          }
+
+          {
+            ev.note && (
+              <p class="evidence__note" style={ev.type === "none" ? "" : "margin-top: var(--space-sm)"}>
+                {ev.note}
+              </p>
+            )
+          }
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  <ContactBlock />
+</Base>

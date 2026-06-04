@@ -1,0 +1,39 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import ContactBlock from "../../components/ContactBlock.astro";
+import Breadcrumb from "../../components/Breadcrumb.astro";
+import { STACKS } from "../../config/site";
+
+const STACK_ID = "sql-cloud-data-engineering";
+const stack = STACKS.find((s) => s.id === STACK_ID)!;
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.tools.includes(STACK_ID))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base title={`${stack.label} | Jatin Jassi`} description={stack.shipped}>
+  <section class="page-hero">
+    <div class="container">
+      <Breadcrumb crumbs={[{ label: "Home", href: "/" }, { label: "By stack" }, { label: stack.label }]} />
+      <span class="eyebrow">By stack</span>
+      <h1>{stack.label}</h1>
+      <p class="page-hero__lead">{stack.shipped}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="projects">
+        {
+          projects.map((p) => (
+            <ProjectCard project={p} kicker="By stack" lens={p.data.lenses ? "technical" : undefined} />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <ContactBlock />
+</Base>

@@ -1,0 +1,58 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import ContactBlock from "../components/ContactBlock.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.themes.includes("technical-ai-ml"))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base
+  title="Technical, AI & ML projects | Jatin Jassi"
+  description="Applied GenAI, deep learning on HPC, and cloud data-platform engineering across healthcare and enterprise contexts."
+>
+  <section class="page-hero">
+    <div class="container">
+      <Breadcrumb crumbs={[{ label: "Home", href: "/" }, { label: "By theme" }, { label: "Technical, AI & ML" }]} />
+      <span class="eyebrow">By theme</span>
+      <h1>Technical, AI & ML</h1>
+      <p class="page-hero__lead">
+        Applied GenAI shipped end to end, PyTorch deep learning on high-performance computing, and a
+        comparative cloud data-platform evaluation, with reliability, cost and evaluation treated as
+        first-class concerns.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="projects">
+        {
+          projects.map((p) => (
+            <ProjectCard
+              project={p}
+              kicker="Technical · AI / ML"
+              lens={p.data.lenses ? "technical" : undefined}
+            />
+          ))
+        }
+      </div>
+
+      <aside class="callout" data-reveal>
+        <h3>Where this comes from</h3>
+        <p>
+          The deep-learning work was completed at the Australian Institute of Health Innovation on the
+          NCI GADI high-performance computing cluster (PyTorch, medical imaging). The GenAI work, a
+          nine-agent LangGraph workflow and a Retrieval-Augmented Azure OpenAI assistant, was delivered
+          in production, confidential environments and is presented through explanation and self-authored
+          architecture diagrams.
+        </p>
+      </aside>
+    </div>
+  </section>
+
+  <ContactBlock />
+</Base>

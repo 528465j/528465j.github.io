@@ -1,0 +1,11 @@
+---
+// Dual-lens segmented control for the Cloud Data Platform Evaluation page only
+// (ARCHITECTURE.md section 11). Behaviour is wired in Base.astro's page script:
+// it reads the ?lens= query parameter on load and swaps the lead + highlights.
+---
+
+<div class="lens-toggle" role="group" aria-label="Choose how to view this project" data-lens-toggle>
+  <span class="visually-hidden">View as</span>
+  <button class="lens-toggle__btn" type="button" data-lens="business" aria-pressed="true">Business</button>
+  <button class="lens-toggle__btn" type="button" data-lens="technical" aria-pressed="false">Technical</button>
+</div>

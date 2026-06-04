@@ -1,0 +1,46 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import ContactBlock from "../components/ContactBlock.astro";
+import Breadcrumb from "../components/Breadcrumb.astro";
+
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.themes.includes("analytics-bi"))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base
+  title="Analytics & BI projects | Jatin Jassi"
+  description="Power BI dashboards, metric definitions and decision support across telecommunications, healthcare, retail and consulting."
+>
+  <section class="page-hero">
+    <div class="container">
+      <Breadcrumb crumbs={[{ label: "Home", href: "/" }, { label: "By theme" }, { label: "Analytics & BI" }]} />
+      <span class="eyebrow">By theme</span>
+      <h1>Analytics & Business Intelligence</h1>
+      <p class="page-hero__lead">
+        Turning ambiguous business questions into dashboards, clean metric definitions and defensible
+        recommendations, built so non-technical stakeholders and senior leadership can act on their own.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="projects">
+        {
+          projects.map((p) => (
+            <ProjectCard
+              project={p}
+              kicker="Analytics · BI"
+              lens={p.data.lenses ? "business" : undefined}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <ContactBlock />
+</Base>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Jatin Jassi">
+  <rect width="32" height="32" rx="7" fill="#654ea3" />
+  <g fill="#ffffff">
+    <rect x="7.5" y="17.5" width="4" height="7" rx="1.2" />
+    <rect x="14" y="12.5" width="4" height="12" rx="1.2" />
+    <rect x="20.5" y="8" width="4" height="16.5" rx="1.2" />
+  </g>
+</svg>

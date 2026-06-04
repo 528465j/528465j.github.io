@@ -1,0 +1,18 @@
+---
+interface Props {
+  tool: string;
+}
+const { tool } = Astro.props;
+
+const LABELS: Record<string, string> = {
+  "microsoft-bi-fabric": "Microsoft BI / Fabric",
+  "azure-genai-llm": "Azure GenAI / LLM",
+  "python-ml-dl": "Python / ML / DL",
+  "sql-cloud-data-engineering": "SQL / Cloud Data",
+};
+const label = LABELS[tool] ?? tool;
+---
+
+<span class="stackbadge">
+  <span class="stackbadge__dot" aria-hidden="true"></span>{label}
+</span>

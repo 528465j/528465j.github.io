@@ -1,0 +1,30 @@
+{
+  "clusters": [
+    {
+      "id": "microsoft-bi-fabric",
+      "label": "Microsoft BI and Fabric",
+      "items": ["Power BI", "Microsoft Fabric", "DAX and semantic models", "KPI and dashboard design for non-technical users", "Power BI REST API (working knowledge)", "Tableau", "Advanced Excel and VBA"]
+    },
+    {
+      "id": "azure-genai-llm",
+      "label": "Azure and GenAI / LLM",
+      "items": ["Azure OpenAI", "OpenAI APIs", "RAG pipeline design", "Document chunking and embeddings", "Vector search and retrieval tuning", "Prompt engineering", "LangGraph multi-agent orchestration", "Google Workspace APIs", "Usage analytics and feedback logging"]
+    },
+    {
+      "id": "python-ml-dl",
+      "label": "Python, ML and Deep Learning",
+      "items": ["Python", "PyTorch", "TensorFlow", "scikit-learn (clustering, K-means)", "OpenCV", "Model evaluation (AUC-ROC, F1, FID)", "Grad-CAM interpretability", "NCI and GADI HPC", "Bash and Linux"]
+    },
+    {
+      "id": "sql-cloud-data-engineering",
+      "label": "SQL, Cloud Warehousing and Data Engineering",
+      "items": ["SQL", "Data modelling", "Data warehousing", "Snowflake (including Snowpark)", "Azure Synapse", "Amazon Redshift (evaluated)", "ETL and ELT", "Salesforce data integration", "Git"]
+    },
+    {
+      "id": "business-analysis",
+      "label": "Business Analysis and Delivery",
+      "no_stack_page": true,
+      "items": ["BABOK-aligned techniques (working knowledge)", "Requirements elicitation", "Workshop facilitation", "Current and future-state process mapping", "Functional and non-functional requirements", "UAT support", "Agile, Scrum and hybrid delivery"]
+    }
+  ]
+}

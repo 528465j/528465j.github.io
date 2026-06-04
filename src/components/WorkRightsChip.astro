@@ -1,0 +1,24 @@
+---
+import profile from "../data/profile.json";
+
+interface Props {
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+// profile.work_rights begins with "Full-time"; bold that word, keep the rest.
+const tail = profile.work_rights.replace(/^Full-time/, "");
+---
+
+<span class="chip chip--rights" title={profile.work_rights}>
+  {
+    compact ? (
+      <span>
+        <strong>Full-time</strong> unrestricted · Subclass 485
+      </span>
+    ) : (
+      <span>
+        <strong>Full-time</strong>{tail}
+      </span>
+    )
+  }
+</span>

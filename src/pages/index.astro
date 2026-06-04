@@ -1,0 +1,295 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import ContactBlock from "../components/ContactBlock.astro";
+import WorkRightsChip from "../components/WorkRightsChip.astro";
+import profile from "../data/profile.json";
+import skills from "../data/skills.json";
+
+const publicDir = path.resolve(process.cwd(), "public");
+const certExists = (screenshot: string) =>
+  fs.existsSync(path.join(publicDir, screenshot.replace(/^\//, "")));
+
+const allProjects = await getCollection("projects");
+const featured = allProjects
+  .filter((p) => p.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const themeKicker = (themes: string[]) =>
+  themes[0] === "technical-ai-ml" ? "Technical · AI / ML" : "Analytics · BI";
+
+// A capability card links to its By-Stack page; the methods group (no stack
+// page) links to the Analytics & BI theme page.
+const clusterHref = (id: string) =>
+  id === "business-analysis" ? "/analytics-bi/" : `/stack/${id}/`;
+
+// Split the tagline at the colon so the clause after it can be italicised in the
+// hero. The meta description (Base.astro) still uses the full plain string.
+const colonIdx = profile.tagline_default.indexOf(":");
+const taglineLead =
+  colonIdx >= 0 ? profile.tagline_default.slice(0, colonIdx) : profile.tagline_default;
+const taglineEmphasis = colonIdx >= 0 ? profile.tagline_default.slice(colonIdx + 1).trim() : "";
+
+// Home-only section index (scroll-spy). IDs match the <section> ids below.
+const sectionIndex = [
+  { id: "skills", label: "Tools of expertise" },
+  { id: "experience", label: "Experience" },
+  { id: "education", label: "Education" },
+  { id: "certifications", label: "Certifications" },
+  { id: "projects", label: "Selected work" },
+];
+---
+
+<Base title="Jatin Jassi | Data, Analytics & AI" description={profile.tagline_default}>
+  <!-- INTRO COVER (home only): centred name + subtitle over five transparent GIFs
+       that pop in one at a time behind the name. Collapses on scroll. -->
+  <section class="intro" aria-label="Introduction">
+    <div class="intro__gifs" aria-hidden="true">
+      <img class="intro__gif intro__gif--1" src="/animations/line-chart.gif" alt="" decoding="async" />
+      <img class="intro__gif intro__gif--2" src="/animations/pie-chart.gif" alt="" decoding="async" />
+      <img class="intro__gif intro__gif--3" src="/animations/coding.gif" alt="" decoding="async" />
+      <img class="intro__gif intro__gif--4" src="/animations/clustering.gif" alt="" decoding="async" />
+      <img class="intro__gif intro__gif--5" src="/animations/cloud.gif" alt="" decoding="async" />
+    </div>
+
+    <div class="intro__content">
+      <h1 class="intro__name">Jatin Jassi</h1>
+      <p class="intro__subtitle">Data &amp; Analytics [AI ready]</p>
+    </div>
+
+    <button class="intro__scroll" type="button" aria-label="Scroll down to content" data-intro-scroll>
+      <span>Scroll</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 5v14M19 12l-7 7-7-7"></path>
+      </svg>
+    </button>
+  </section>
+
+  <!-- HOME SECTION INDEX (scroll-spy): hidden behind a fixed center-left arrow;
+       pops out on click and highlights the section currently in view. JS-gated. -->
+  <nav class="scrollspy" aria-label="Page sections" data-scrollspy>
+    <div class="scrollspy__panel" id="scrollspy-panel">
+      <p class="scrollspy__title">On this page</p>
+      <ul class="scrollspy__list">
+        {
+          sectionIndex.map((s) => (
+            <li>
+              <a class="scrollspy__link" href={`#${s.id}`} data-spy-link={s.id}>
+                <span class="scrollspy__dot" aria-hidden="true" />
+                <span class="scrollspy__label">{s.label}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <button
+      class="scrollspy__toggle"
+      type="button"
+      data-scrollspy-toggle
+      aria-expanded="false"
+      aria-controls="scrollspy-panel"
+      aria-label="Open section index"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m9 18 6-6-6-6"></path>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container load-stagger">
+      <p class="eyebrow hero__eyebrow">Data · AI · Analytics</p>
+      <p class="hero__tagline">{taglineLead}: <em class="hero__tagline-em">{taglineEmphasis}</em></p>
+
+      <div class="hero__meta">
+        <span class="hero__location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          {profile.location}
+        </span>
+        <WorkRightsChip />
+      </div>
+
+      <div class="hero__links">
+        <a class="linkpill" href={profile.linkedin} target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.5 8h4V24h-4V8zM8 8h3.83v2.18h.05c.53-1 1.84-2.18 3.79-2.18 4.05 0 4.8 2.67 4.8 6.14V24h-4v-6.86c0-1.64-.03-3.74-2.28-3.74-2.28 0-2.63 1.78-2.63 3.62V24H8V8z"></path></svg>
+          LinkedIn
+        </a>
+        <button class="linkpill" type="button" data-copy-email-toast={profile.email} aria-label="Copy email address to clipboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+            <path d="m3 7 9 6 9-6"></path>
+          </svg>
+          Email
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS OF EXPERTISE -->
+  <section class="section" id="skills">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Tools of expertise</span>
+        <h2>Five capability groups, claimed at depth.</h2>
+        <p>Curated rather than a flat tool list; each group is grounded in delivered work.</p>
+      </div>
+
+      <div class="clusters">
+        {
+          skills.clusters.map((cluster, i) => (
+            <a class="cluster" href={clusterHref(cluster.id)} data-reveal>
+              <div class="cluster__head">
+                <span class="cluster__num">{String(i + 1).padStart(2, "0")}</span>
+                <h3 class="cluster__label">{cluster.label}</h3>
+              </div>
+              <ul class="cluster__items">
+                {cluster.items.map((item) => (
+                  <li class="tag">{item}</li>
+                ))}
+              </ul>
+              <span class="cluster__go">
+                View projects
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"></path>
+                </svg>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE TIMELINE -->
+  <section class="section" id="experience">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Experience</span>
+        <h2>Five years across telco, healthcare and consulting.</h2>
+        <p>Named Australian employers and institutions front and centre.</p>
+      </div>
+
+      <div class="timeline">
+        {
+          profile.experience.map((job) => (
+            <div
+              class={`timeline__item ${job.dates.includes("Present") ? "timeline__item--current" : ""}`}
+              data-reveal
+            >
+              <p class="timeline__dates">{job.dates}</p>
+              <p class="timeline__title">{job.title}</p>
+              <p class="timeline__org">
+                <b>{job.employer}</b> · {job.location}
+              </p>
+              <a class="timeline__cta" href={`/experience/${job.slug}/`}>
+                Achievements
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"></path>
+                </svg>
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- EDUCATION + FOUNDATION -->
+  <section class="section" id="education">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Education</span>
+        <h2>Postgraduate analytics, grounded in economics.</h2>
+      </div>
+
+      <div class="edu-grid">
+        {
+          profile.education.map((e) => (
+            <article class="edu-card" data-reveal>
+              <div class="edu-card__main">
+                <h3 class="edu-card__qual">{e.qualification}</h3>
+                <p class="edu-card__inst">{e.institution}</p>
+                <p class="edu-card__date">{e.date}</p>
+              </div>
+              <div class="edu-card__logo">
+                <img src={e.logo} alt={`${e.institution} logo`} loading="lazy" />
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <article class="foundation" data-reveal>
+        <h3 class="foundation__title">{profile.foundation.title}</h3>
+        <p class="foundation__context">{profile.foundation.context}</p>
+        <p class="foundation__body">{profile.foundation.body}</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section class="section" id="certifications">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Certifications</span>
+        <h2>Recognised, verifiable credentials.</h2>
+      </div>
+
+      <div class="certs">
+        {
+          profile.certifications.map((c) => {
+            const has = certExists(c.logo);
+            return (
+              <article class="cert-card" data-reveal>
+                <div class:list={["cert-card__media", { "cert-card__media--logo": has }]}>
+                  {has ? (
+                    <img src={c.logo} alt={`${c.issuer} logo`} loading="lazy" />
+                  ) : (
+                    <div class="cert-card__placeholder">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <path d="m21 15-5-5L5 21"></path>
+                      </svg>
+                      <span>Screenshot pending</span>
+                    </div>
+                  )}
+                </div>
+                <div class="cert-card__body">
+                  <h3 class="cert-card__name">{c.name}</h3>
+                  <p class="cert-card__issuer">{c.issuer} · {c.date}</p>
+                  <p class="cert-card__id">ID: {c.id}</p>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PROJECTS -->
+  <section class="section" id="projects">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Selected work</span>
+        <h2>Featured projects.</h2>
+        <p>A cross-section of analytics, BI and applied AI work. Browse all by theme or by stack.</p>
+      </div>
+
+      <div class="projects">
+        {featured.map((p) => <ProjectCard project={p} kicker={themeKicker(p.data.themes)} />)}
+      </div>
+    </div>
+  </section>
+
+  <ContactBlock />
+</Base>
