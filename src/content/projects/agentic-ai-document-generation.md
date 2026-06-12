@@ -5,8 +5,35 @@ themes: ["technical-ai-ml"]
 tools: ["azure-genai-llm"]
 roles: ["ai-ml-specialist", "data-engineer", "data-scientist"]
 metrics: ["50% lower estimated per-row cost", "Batch time cut from 37 hours to under 8 hours for 200 applications", "9 agents across 12 modules"]
-evidence: { type: "none", note: "Built in a confidential environment. Presented through explanation and an architecture diagram." }
-diagram: "/diagrams/agentic-ai-workflow.svg"
+evidence: { type: "none", note: "Built in a confidential environment. Presented through explanation and self-authored workflow diagrams." }
+gallery:
+  - label: "Workflow in Action"
+    images:
+      - "/diagrams/agentic-workflow/ERD_diagram.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-02.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-03.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-04.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-05.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-06.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-07.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-08.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-09.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-10.png"
+      - "/diagrams/agentic-workflow/LangGraph_State_Evolution-11.png"
+      - "/diagrams/agentic-workflow/The_Idempotent_Job_Blueprint-7.png"
+      - "/diagrams/agentic-workflow/The_9-Agent_Assembly_Line-9.png"
+  - label: "Workflow Adaptation"
+    images:
+      - "/diagrams/agentic-workflow/audit_cycle-02.png"
+      - "/diagrams/agentic-workflow/audit_cycle-04.png"
+      - "/diagrams/agentic-workflow/audit_cycle-05.png"
+      - "/diagrams/agentic-workflow/audit_cycle-06.png"
+      - "/diagrams/agentic-workflow/audit_cycle-07.png"
+      - "/diagrams/agentic-workflow/audit_cycle-08.png"
+      - "/diagrams/agentic-workflow/audit_cycle-09.png"
+      - "/diagrams/agentic-workflow/audit_cycle-11.png"
+      - "/diagrams/agentic-workflow/audit_cycle-12.png"
+      - "/diagrams/agentic-workflow/audit_cycle-13.png"
 featured: true
 order: 1
 ---

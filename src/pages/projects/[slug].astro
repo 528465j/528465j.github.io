@@ -4,6 +4,7 @@ import Base from "../../layouts/Base.astro";
 import ContactBlock from "../../components/ContactBlock.astro";
 import ProjectTags from "../../components/ProjectTags.astro";
 import LensToggle from "../../components/LensToggle.astro";
+import Carousel from "../../components/Carousel.astro";
 import Breadcrumb from "../../components/Breadcrumb.astro";
 
 export async function getStaticPaths() {
@@ -44,14 +45,18 @@ const hasLenses = !!data.lenses;
     </div>
 
     {
-      data.diagram && (
+      data.gallery && data.gallery.length > 0 ? (
+        <div class="container">
+          <Carousel modes={data.gallery} />
+        </div>
+      ) : data.diagram ? (
         <div class="container">
           <figure class="diagram" data-reveal>
             <img src={data.diagram} alt={`Architecture diagram for ${data.title}`} loading="lazy" />
             <figcaption class="diagram__cap">Self-authored architecture diagram.</figcaption>
           </figure>
         </div>
-      )
+      ) : null
     }
 
     <div class="container detail__layout">

@@ -1877,7 +1877,8 @@ html.js body.has-intro.at-top .topbar:focus-within {
   text-align: center;
   isolation: isolate;
 }
-/* Legibility scrim above the blurred charts, below the text. Adapts to theme. */
+/* Legibility scrim below the text, above the dot background. Restored (change 6)
+   to its original strength after the fabric experiment was removed. Adapts to theme. */
 .intro::before {
   content: "";
   position: absolute;
@@ -1967,7 +1968,9 @@ html.js body.has-intro.at-top .topbar:focus-within {
   from { opacity: 0; transform: translateY(22px); }
 }
 
-/* scroll-down arrow: hidden until JS reveals it after 4s idle at the top */
+/* scroll cue (change 1): shown immediately while at the top (no idle delay; the
+   reveal is driven by initIntro in Base.astro). Bold label sitting on the intro
+   background, plus a compact circle that holds only the arrow. */
 .intro__scroll {
   position: absolute;
   right: clamp(1rem, 4vw, 2.5rem);
@@ -1976,12 +1979,11 @@ html.js body.has-intro.at-top .topbar:focus-within {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.5rem;
   padding: 0.4rem;
   background: transparent;
   border: 0;
   cursor: pointer;
-  color: var(--accent);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   letter-spacing: 0.18em;
@@ -1997,14 +1999,55 @@ html.js body.has-intro.at-top .topbar:focus-within {
   transform: none;
   pointer-events: auto;
 }
-.intro__scroll svg {
-  width: 1.4rem;
-  height: 1.4rem;
+/* Bold label, same size as before. Coloured to match the circle so it stays
+   readable on the intro background: white in dark theme, black in light theme. */
+.intro__scroll-label {
+  font-weight: 700;
+  color: #ffffff;
+}
+:root[data-theme="light"] .intro__scroll-label {
+  color: #000000;
+}
+/* Compact circle holding only the arrow. Dark theme: white circle, black arrow.
+   Light theme: black circle, white arrow. The circle carries the up/down bob. */
+.intro__scroll-circle {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: var(--shadow);
   animation: introBob 1.8s ease-in-out infinite;
+}
+:root[data-theme="light"] .intro__scroll-circle {
+  background: #000000;
+  color: #ffffff;
+}
+.intro__scroll-circle svg {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 @keyframes introBob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(4px); }
+}
+
+/* ---------- Home intro: static vector-dot background (change 6) ----------
+   A still field of dots behind the GIFs whose size and shade co-vary in a subtle
+   macroscopic wave (bigger = lighter, smaller = darker); white in dark theme and
+   ultraviolet in light, 70% transparent. The pattern is drawn in initDots
+   (Base.astro). The layer fades as the whole intro collapses on scroll. */
+.intro__dots {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: calc(1 - 0.9 * var(--intro-progress, 0));
+  transition: opacity 120ms linear;
 }
 
 /* tablet + mobile tuning for the intro: smaller GIFs so they stay clear of the name */
@@ -2032,7 +2075,7 @@ html.js body.has-intro.at-top .topbar:focus-within {
   .intro__content { transform: none !important; opacity: 1 !important; }
   .intro__gifs { opacity: 0.85 !important; }
   .intro__gif { animation: none; opacity: 0.9; transform: none; }
-  .intro__scroll svg { animation: none; }
+  .intro__scroll-circle { animation: none; }
 }
 
 /* ============================================================
@@ -2150,4 +2193,166 @@ html:not(.js) .scrollspy {
 }
 .scrollspy.is-open .scrollspy__toggle svg {
   transform: rotate(180deg);
+}
+
+/* ============================================================
+   Project carousel (change 4): the agentic-AI project detail page
+   replaces its single architecture diagram with an automatic
+   slideshow that has two switchable modes. Themed via tokens, so it
+   adapts to light/dark. Auto-advance + manual arrows/dots wired in
+   initCarousel (Base.astro). Progressive enhancement: without JS the
+   first slide shows and the JS-only controls are hidden.
+   ============================================================ */
+.carousel {
+  margin-top: var(--space-lg);
+  background: var(--surface);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-md);
+  display: grid;
+  gap: var(--space-md);
+}
+
+/* Mode toggle (segmented control, matches the dual-lens toggle treatment). */
+.carousel__toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  background: var(--surface-2);
+  border: var(--border);
+  border-radius: 999px;
+  justify-self: start;
+  max-width: 100%;
+}
+.carousel__mode {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  min-height: 40px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.carousel__mode[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: var(--shadow-sm);
+}
+html:not(.js) .carousel__toggle { display: none; }
+
+/* Viewport: a fixed-aspect frame; diagrams vary in size so they are contained. */
+.carousel__viewport {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  aspect-ratio: 16 / 10;
+}
+@media (max-width: 640px) {
+  .carousel__viewport { aspect-ratio: 4 / 3; }
+}
+/* Track: a horizontal strip of full-width slides that translates between them.
+   The ease-out curve (fast start, decelerating to a smooth stop) lives here, and
+   is neutralised by the global reduced-motion rule. */
+.carousel__track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.carousel__track[hidden] { display: none; }
+
+.carousel__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Without JS only the first slide shows (the others keep their `hidden`). */
+.carousel__slide[hidden] { display: none; }
+
+/* Prev/next arrows, blended into the site (ghost-pill look, 44px tap target). */
+.carousel__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.carousel__arrow:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.carousel__arrow--prev { left: 0.6rem; }
+.carousel__arrow--next { right: 0.6rem; }
+.carousel__arrow:hover.carousel__arrow--prev { transform: translateY(-50%) translateX(-2px); }
+.carousel__arrow:hover.carousel__arrow--next { transform: translateY(-50%) translateX(2px); }
+.carousel__arrow svg { width: 1.25rem; height: 1.25rem; }
+html:not(.js) .carousel__arrow { display: none; }
+
+/* Footer: clickable dots + a self-authored caption. */
+.carousel__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.carousel__dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: center;
+}
+.carousel__dot {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.carousel__dot::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.carousel__dot:hover::before { background: var(--ink-3); }
+.carousel__dot.is-active::before {
+  background: var(--accent);
+  transform: scale(1.35);
+}
+html:not(.js) .carousel__dots { display: none; }
+.carousel__cap {
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--ink-3);
+  text-align: center;
 }

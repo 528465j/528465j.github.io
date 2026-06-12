@@ -29,6 +29,18 @@ const projects = defineCollection({
       note: z.string().optional()
     }),
     diagram: z.string().optional(),
+    // Optional multi-mode slideshow that replaces the single `diagram` on the
+    // detail page (used by the confidential agentic-AI project, which can only be
+    // shown through self-authored workflow diagrams). Each mode has a label and an
+    // ordered list of image paths under /public.
+    gallery: z
+      .array(
+        z.object({
+          label: z.string(),
+          images: z.array(z.string()),
+        })
+      )
+      .optional(),
     featured: z.boolean().default(false),
     order: z.number().default(50),
     lenses: z.object({

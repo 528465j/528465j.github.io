@@ -47,6 +47,12 @@ const sectionIndex = [
   <!-- INTRO COVER (home only): centred name + subtitle over five transparent GIFs
        that pop in one at a time behind the name. Collapses on scroll. -->
   <section class="intro" aria-label="Introduction">
+    <!-- Static vector-dot background (change 6): a still field of dots whose size
+         and shade co-vary in a subtle macroscopic wave (bigger = lighter, smaller
+         = darker), 70% transparent. Drawn once by initDots() in Base.astro; purely
+         decorative and sits behind the name/subtitle/GIFs with no interaction. -->
+    <canvas class="intro__dots" data-dots aria-hidden="true"></canvas>
+
     <div class="intro__gifs" aria-hidden="true">
       <img class="intro__gif intro__gif--1" src="/animations/line-chart.gif" alt="" decoding="async" />
       <img class="intro__gif intro__gif--2" src="/animations/pie-chart.gif" alt="" decoding="async" />
@@ -57,14 +63,19 @@ const sectionIndex = [
 
     <div class="intro__content">
       <h1 class="intro__name">Jatin Jassi</h1>
-      <p class="intro__subtitle">Data &amp; Analytics [AI ready]</p>
+      <p class="intro__subtitle">Data, AI and Analytics Professional</p>
     </div>
 
+    <!-- Scroll cue (change 1): bold label + a compact circle holding the arrow.
+         Shows immediately while at the top (no idle delay); the circle bobs and
+         taps scroll down. Colours are theme-driven in global.css. -->
     <button class="intro__scroll" type="button" aria-label="Scroll down to content" data-intro-scroll>
-      <span>Scroll</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 5v14M19 12l-7 7-7-7"></path>
-      </svg>
+      <span class="intro__scroll-label">Scroll</span>
+      <span class="intro__scroll-circle" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M19 12l-7 7-7-7"></path>
+        </svg>
+      </span>
     </button>
   </section>
 

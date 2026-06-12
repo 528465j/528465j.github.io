@@ -388,7 +388,6 @@ const isHome = Astro.url.pathname === "/";
         body.classList.add("has-intro");
         const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const arrow = intro.querySelector("[data-intro-scroll]");
-        let idleTimer;
 
         function onScroll() {
           const y = window.scrollY || 0;
@@ -396,32 +395,293 @@ const isHome = Astro.url.pathname === "/";
           const progress = Math.min(y / (h * 0.85), 1);
           body.style.setProperty("--intro-progress", progress.toFixed(3));
           body.classList.toggle("at-top", y < 8);
-        }
-        function showArrow() {
-          if (arrow && (window.scrollY || 0) < 8) arrow.classList.add("is-visible");
-        }
-        function resetIdle() {
-          if (arrow) arrow.classList.remove("is-visible");
-          window.clearTimeout(idleTimer);
-          if (!reduce && (window.scrollY || 0) < 8) idleTimer = window.setTimeout(showArrow, 4000);
-        }
-        function onScrollAll() {
-          onScroll();
-          resetIdle();
+          // The scroll cue shows immediately while at the top (change 1: the old
+          // 4s idle delay was removed) and hides once the visitor scrolls away.
+          if (arrow) arrow.classList.toggle("is-visible", y < 8);
         }
         function onArrowClick() {
           window.scrollTo({ top: window.innerHeight, behavior: reduce ? "auto" : "smooth" });
         }
 
         onScroll();
-        resetIdle();
-        window.addEventListener("scroll", onScrollAll, { passive: true });
+        window.addEventListener("scroll", onScroll, { passive: true });
         if (arrow) arrow.addEventListener("click", onArrowClick);
 
         introCleanup = function () {
-          window.removeEventListener("scroll", onScrollAll);
-          window.clearTimeout(idleTimer);
+          window.removeEventListener("scroll", onScroll);
           if (arrow) arrow.removeEventListener("click", onArrowClick);
+        };
+      }
+
+      // Static vector-dot background (change 6): a still field of dots behind the
+      // intro GIFs. Dot size and shade co-vary in a subtle macroscopic wave (bigger
+      // = lighter, smaller = darker); white in dark theme, ultraviolet in light, all
+      // 70% transparent. Drawn once (and on resize / theme switch); no animation and
+      // no interaction with the name/subtitle/GIFs. Purely decorative.
+      let dotsCleanup = null;
+      function initDots() {
+        if (dotsCleanup) {
+          dotsCleanup();
+          dotsCleanup = null;
+        }
+        const canvas = document.querySelector("[data-dots]");
+        if (!canvas) return;
+        const intro = canvas.closest(".intro");
+        const ctx = canvas.getContext("2d");
+        if (!intro || !ctx) return;
+
+        const SPACING = 32; // distance between dots (CSS px)
+        const ALPHA = 0.3; // 70% transparent: subtle, never over-highlighting
+
+        function draw() {
+          const rect = intro.getBoundingClientRect();
+          const W = Math.max(1, Math.round(rect.width));
+          const H = Math.max(1, Math.round(rect.height));
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.round(W * dpr);
+          canvas.height = Math.round(H * dpr);
+          canvas.style.width = W + "px";
+          canvas.style.height = H + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, W, H);
+
+          const light = document.documentElement.getAttribute("data-theme") === "light";
+          // Two gentle sine waves (scaled to the viewport, on the two diagonals)
+          // combine into a soft organic undulation; one wave value drives both the
+          // size and the shade of each dot, so the wave reads macroscopically.
+          const baseLen = Math.max(W, H) / 2.6;
+          const k1x = (Math.PI * 2) / baseLen,
+            k1y = (Math.PI * 2) / (baseLen * 1.22);
+          const k2x = (Math.PI * 2) / (baseLen * 0.7),
+            k2y = (Math.PI * 2) / (baseLen * 0.86);
+
+          for (let y = SPACING / 2; y < H; y += SPACING) {
+            for (let x = SPACING / 2; x < W; x += SPACING) {
+              const wv = (Math.sin(x * k1x + y * k1y) + Math.sin(x * k2x - y * k2y)) / 2; // [-1,1]
+              const w = (wv + 1) / 2; // [0,1]
+              const radius = 1.0 + w * 1.6; // ~1.0 .. 2.6 px: bigger at the wave peaks
+              let col;
+              if (light) {
+                // ultraviolet: darker violet (small) -> lighter violet (big)
+                const r = Math.round(74 + w * 81); // 74 -> 155
+                const g = Math.round(56 + w * 72); // 56 -> 128
+                const b = Math.round(140 + w * 78); // 140 -> 218
+                col = "rgba(" + r + "," + g + "," + b + "," + ALPHA + ")";
+              } else {
+                // white: dim grey (small) -> white (big)
+                const v = Math.round(150 + w * 105); // 150 -> 255
+                col = "rgba(" + v + "," + v + "," + v + "," + ALPHA + ")";
+              }
+              ctx.beginPath();
+              ctx.arc(x, y, radius, 0, Math.PI * 2);
+              ctx.fillStyle = col;
+              ctx.fill();
+            }
+          }
+        }
+
+        draw();
+        const onResize = () => draw();
+        window.addEventListener("resize", onResize);
+        // Redraw on theme switch so the dot colour follows the active theme.
+        const mo = new MutationObserver(() => draw());
+        mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+        dotsCleanup = function () {
+          window.removeEventListener("resize", onResize);
+          mo.disconnect();
+        };
+      }
+
+      // Project carousel (change 4 + slide update): an auto-advancing slideshow with
+      // two switchable modes. Slides glide horizontally with an ease-out curve (fast
+      // start, decelerating to a smooth stop; the easing lives in the CSS transition).
+      // A trailing clone of slide 0 gives a seamless forward loop. Manual prev/next +
+      // dots; 3s per slide; pauses on hover/focus; no auto-advance under reduced motion.
+      let carouselCleanup = null;
+      function initCarousel() {
+        if (carouselCleanup) {
+          carouselCleanup();
+          carouselCleanup = null;
+        }
+        const root = document.querySelector("[data-carousel]");
+        if (!root) return;
+        const tracks = Array.from(root.querySelectorAll("[data-carousel-track]"));
+        if (!tracks.length) return;
+        const modeBtns = Array.from(root.querySelectorAll("[data-carousel-mode]"));
+        const prevBtn = root.querySelector("[data-carousel-prev]");
+        const nextBtn = root.querySelector("[data-carousel-next]");
+        const dotsWrap = root.querySelector("[data-carousel-dots]");
+        const caption = root.querySelector("[data-carousel-caption]");
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const DELAY = 3000;
+
+        // Reveal the no-JS hidden slides so the whole strip lays out, then append a
+        // trailing clone of slide 0 to each track for a seamless forward loop.
+        const realCount = [];
+        tracks.forEach((t, m) => {
+          const slides = Array.from(t.querySelectorAll("[data-carousel-slide]"));
+          slides.forEach((s) => (s.hidden = false));
+          realCount[m] = slides.length;
+          if (slides.length > 1) {
+            const clone = slides[0].cloneNode(true);
+            clone.removeAttribute("data-carousel-slide");
+            clone.setAttribute("data-carousel-clone", "");
+            clone.setAttribute("aria-hidden", "true");
+            t.appendChild(clone);
+          }
+        });
+
+        let mode = 0,
+          index = 0,
+          timer = 0,
+          animating = false,
+          animTimer = 0;
+
+        function setTransform(track, idx, animate) {
+          if (!animate) track.style.transition = "none";
+          track.style.transform = "translateX(" + -idx * 100 + "%)";
+          if (!animate) {
+            void track.offsetWidth; // commit the jump with no transition
+            track.style.transition = "";
+          }
+        }
+        function beginAnim() {
+          animating = true;
+          if (animTimer) window.clearTimeout(animTimer);
+          animTimer = window.setTimeout(finishAnim, 900); // fallback if transitionend is missed
+        }
+        function finishAnim() {
+          if (animTimer) {
+            window.clearTimeout(animTimer);
+            animTimer = 0;
+          }
+          animating = false;
+          if (index >= realCount[mode]) {
+            // we glided onto the trailing clone; snap back to the real first slide
+            index = 0;
+            setTransform(tracks[mode], 0, false);
+            renderChrome();
+          }
+        }
+        function renderChrome() {
+          modeBtns.forEach((b, m) => b.setAttribute("aria-pressed", String(m === mode)));
+          const n = realCount[mode];
+          const shown = ((index % n) + n) % n;
+          if (dotsWrap) {
+            Array.from(dotsWrap.children).forEach((d, i) => d.classList.toggle("is-active", i === shown));
+          }
+          if (caption) caption.textContent = " · " + (shown + 1) + " / " + n;
+        }
+        function buildDots() {
+          if (!dotsWrap) return;
+          dotsWrap.textContent = "";
+          for (let i = 0; i < realCount[mode]; i++) {
+            const target = i;
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "carousel__dot";
+            b.setAttribute("aria-label", "Go to slide " + (i + 1));
+            b.addEventListener("click", () => {
+              goTo(target);
+              restart();
+            });
+            dotsWrap.appendChild(b);
+          }
+        }
+        function goTo(i) {
+          if (animating || realCount[mode] <= 1 || i === index) return;
+          beginAnim();
+          index = i;
+          setTransform(tracks[mode], index, true);
+          renderChrome();
+        }
+        function next() {
+          if (animating || realCount[mode] <= 1) return;
+          beginAnim();
+          index += 1; // may land on the trailing clone (index === realCount[mode])
+          setTransform(tracks[mode], index, true);
+          renderChrome();
+        }
+        function prev() {
+          if (animating || realCount[mode] <= 1) return;
+          const n = realCount[mode];
+          beginAnim();
+          if (index === 0) {
+            // jump (no transition) onto the clone, which looks identical to slide 0,
+            // then glide to the real last slide: a seamless backward wrap.
+            setTransform(tracks[mode], n, false);
+            index = n - 1;
+            requestAnimationFrame(() => setTransform(tracks[mode], index, true));
+          } else {
+            index -= 1;
+            setTransform(tracks[mode], index, true);
+          }
+          renderChrome();
+        }
+        function onTransitionEnd(e) {
+          if (e.target !== tracks[mode] || e.propertyName !== "transform") return;
+          finishAnim();
+        }
+        function setMode(m) {
+          if (m === mode || animating) return;
+          tracks[mode].hidden = true;
+          mode = m;
+          index = 0;
+          tracks[mode].hidden = false;
+          setTransform(tracks[mode], 0, false);
+          buildDots();
+          renderChrome();
+        }
+        function stop() {
+          if (timer) {
+            window.clearInterval(timer);
+            timer = 0;
+          }
+        }
+        function start() {
+          if (reduce) return;
+          stop();
+          timer = window.setInterval(next, DELAY);
+        }
+        function restart() {
+          stop();
+          start();
+        }
+
+        tracks.forEach((t) => t.addEventListener("transitionend", onTransitionEnd));
+        modeBtns.forEach((b, m) =>
+          b.addEventListener("click", () => {
+            setMode(m);
+            restart();
+          })
+        );
+        if (prevBtn)
+          prevBtn.addEventListener("click", () => {
+            prev();
+            restart();
+          });
+        if (nextBtn)
+          nextBtn.addEventListener("click", () => {
+            next();
+            restart();
+          });
+        root.addEventListener("mouseenter", stop);
+        root.addEventListener("mouseleave", start);
+        root.addEventListener("focusin", stop);
+        root.addEventListener("focusout", start);
+
+        tracks.forEach((t, m) => {
+          t.hidden = m !== 0;
+          setTransform(t, 0, false);
+        });
+        buildDots();
+        renderChrome();
+        start();
+
+        carouselCleanup = function () {
+          stop();
+          if (animTimer) window.clearTimeout(animTimer);
         };
       }
 
@@ -435,6 +695,8 @@ const isHome = Astro.url.pathname === "/";
         initEmailToast();
         initReveal();
         initIntro();
+        initDots();
+        initCarousel();
         initScrollSpy();
       }
 

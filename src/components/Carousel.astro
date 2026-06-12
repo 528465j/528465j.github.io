@@ -1,0 +1,77 @@
+---
+// Multi-mode slideshow (change 4) used by the confidential agentic-AI project,
+// which can only be shown through self-authored workflow diagrams. Each mode is a
+// labelled, ordered set of images; a segmented toggle switches between them.
+// Auto-advance, manual arrows and dots are wired in initCarousel (Base.astro).
+// Progressive enhancement: server-renders the first track + first slide visible,
+// and the JS-only controls (toggle, arrows, dots) are hidden without JS.
+interface Mode {
+  label: string;
+  images: string[];
+}
+interface Props {
+  modes: Mode[];
+}
+const { modes } = Astro.props;
+---
+
+<div
+  class="carousel"
+  data-carousel
+  role="group"
+  aria-roledescription="carousel"
+  aria-label="Self-authored workflow diagrams"
+>
+  <div class="carousel__toggle" role="group" aria-label="Slideshow mode">
+    {
+      modes.map((m, i) => (
+        <button
+          class="carousel__mode"
+          type="button"
+          data-carousel-mode={i}
+          aria-pressed={i === 0 ? "true" : "false"}
+        >
+          {m.label}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="carousel__viewport">
+    {
+      modes.map((m, i) => (
+        <div class="carousel__track" data-carousel-track={i} hidden={i !== 0}>
+          {m.images.map((src, j) => (
+            <img
+              class="carousel__slide"
+              src={src}
+              alt={`${m.label}: diagram ${j + 1} of ${m.images.length}`}
+              data-carousel-slide={j}
+              loading="lazy"
+              decoding="async"
+              hidden={j !== 0}
+            />
+          ))}
+        </div>
+      ))
+    }
+
+    <button class="carousel__arrow carousel__arrow--prev" type="button" data-carousel-prev aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"></path>
+      </svg>
+    </button>
+    <button class="carousel__arrow carousel__arrow--next" type="button" data-carousel-next aria-label="Next slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m9 18 6-6-6-6"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="carousel__footer">
+    <div class="carousel__dots" data-carousel-dots></div>
+    <p class="carousel__cap">
+      Self-authored workflow diagrams<span class="carousel__counter" data-carousel-caption></span>
+    </p>
+  </div>
+</div>
