@@ -41,6 +41,9 @@ const projects = defineCollection({
         })
       )
       .optional(),
+    // Caption shown beneath a `gallery` carousel (defaults in Carousel.astro).
+    // A single-mode gallery renders no toggle.
+    galleryCaption: z.string().optional(),
     featured: z.boolean().default(false),
     order: z.number().default(50),
     lenses: z.object({

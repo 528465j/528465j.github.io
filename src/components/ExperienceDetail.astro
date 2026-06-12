@@ -1,0 +1,53 @@
+---
+// Shared body of an experience's "Achievements": the project cards for the role,
+// or (Assistant Manager) a written summary plus a subtle redirect to the role it
+// is detailed under, or a neutral fallback. Rendered identically on the standalone
+// /experience/<slug>/ page and inside the home-page experience modal, so the two
+// always match. The header (eyebrow + title + dates) is supplied by each consumer.
+import { getCollection } from "astro:content";
+import ProjectCard from "./ProjectCard.astro";
+
+interface Props {
+  job: any;
+}
+const { job } = Astro.props;
+
+const projects = (await getCollection("projects"))
+  .filter((p) => p.data.employer === job.slug)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const themeKicker = (themes: string[]) =>
+  themes[0] === "technical-ai-ml" ? "Technical · AI / ML" : "Analytics · BI";
+---
+
+{
+  projects.length > 0 ? (
+    <div class="projects">
+      {projects.map((p) => (
+        <ProjectCard project={p} kicker={themeKicker(p.data.themes)} />
+      ))}
+    </div>
+  ) : job.summary ? (
+    <div class="expsummary">
+      <ul class="expsummary__list">
+        {job.summary.map((s: string) => (
+          <li>{s}</li>
+        ))}
+      </ul>
+      {job.redirect && (
+        <a
+          class="expsummary__redirect"
+          href={`/experience/${job.redirect.slug}/`}
+          data-exp-open={job.redirect.slug}
+        >
+          <span>See the detail behind these in my {job.redirect.label} role</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"></path>
+          </svg>
+        </a>
+      )}
+    </div>
+  ) : (
+    <p class="evidence__note">Work from this role is presented across the project pages.</p>
+  )
+}

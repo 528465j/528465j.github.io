@@ -5,8 +5,20 @@ themes: ["technical-ai-ml"]
 tools: ["azure-genai-llm"]
 roles: ["ai-ml-specialist", "data-scientist", "data-engineer"]
 metrics: ["Replaced manual portal searches with natural-language access", "Reduced follow-up questions from frontline staff"]
-evidence: { type: "confidential", note: "Built in a confidential environment. Presented through explanation and an architecture diagram." }
-diagram: "/diagrams/rag-assistant.svg"
+evidence: { type: "confidential", note: "Built in a confidential environment. Presented through explanation and self-authored architecture diagrams." }
+gallery:
+  - label: "AskTelstra RAG architecture"
+    images:
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-1.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-2.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-3.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-4.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-5.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-6.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-7.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-8.png"
+      - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-9.png"
+galleryCaption: "Self-authored architecture diagrams"
 featured: true
 order: 2
 ---

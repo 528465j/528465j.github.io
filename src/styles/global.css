@@ -2356,3 +2356,156 @@ html:not(.js) .carousel__dots { display: none; }
   color: var(--ink-3);
   text-align: center;
 }
+
+/* ============================================================
+   Experience detail modal (change): a native <dialog> opened from
+   the timeline "Details | Achievements" buttons. Covers ~85% of the
+   viewport, blurred backdrop on the exposed 15%, pop-out animation.
+   Without JS the buttons navigate to /experience/<slug>/ instead.
+   ============================================================ */
+.exp-modal {
+  width: 85vw;
+  height: 85vh;
+  height: 85dvh;
+  max-width: 85vw;
+  max-height: 85dvh;
+  margin: auto; /* native centring in the top layer */
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden; /* the body scrolls, not the dialog box */
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 280ms var(--ease), transform 280ms var(--ease);
+}
+.exp-modal.is-open {
+  opacity: 1;
+  transform: scale(1);
+}
+/* The exposed 15% is the blurred, dimmed backdrop; clicking it closes (JS). */
+.exp-modal::backdrop {
+  background: rgba(0, 0, 0, 0.22);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  opacity: 0;
+  transition: opacity 280ms var(--ease);
+}
+.exp-modal.is-open::backdrop {
+  opacity: 1;
+}
+
+/* Linux-style circular close button, top-right (red on hover). */
+.exp-modal__close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 5;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+.exp-modal__close:hover,
+.exp-modal__close:focus-visible {
+  background: #e8413a;
+  color: #ffffff;
+  transform: scale(1.06);
+}
+.exp-modal__close svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.exp-modal__body {
+  height: 100%;
+  overflow-y: auto;
+  /* extra top padding so the header never sits under the top-right close button */
+  padding: clamp(3.2rem, 6vw, 3.6rem) clamp(1.4rem, 4vw, 2.75rem) clamp(1.4rem, 4vw, 2.75rem);
+  -webkit-overflow-scrolling: touch;
+}
+.exp-modal__title {
+  font-size: var(--step-3);
+  margin-top: var(--space-2xs);
+}
+.exp-modal__lead {
+  color: var(--ink-2);
+  font-size: var(--step-1);
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+.exp-modal__lead b {
+  color: var(--ink);
+}
+/* Cards inside the modal show immediately (the scroll-reveal never fires while
+   the dialog is display:none). */
+.js .exp-modal [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Assistant-Manager written summary + subtle redirect to the Consultant role. */
+.expsummary__list {
+  display: grid;
+  gap: var(--space-md);
+  max-width: 70ch;
+}
+.expsummary__list li {
+  position: relative;
+  padding-left: 1.6rem;
+  color: var(--ink);
+  font-size: var(--step-1);
+  line-height: 1.6;
+}
+.expsummary__list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.expsummary__redirect {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: var(--space-xl);
+  color: var(--ink-2);
+  font-size: var(--step-0);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease);
+}
+.expsummary__redirect:hover {
+  color: var(--accent);
+}
+.expsummary__redirect svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--dur-fast) var(--ease);
+}
+.expsummary__redirect:hover svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .exp-modal,
+  .exp-modal::backdrop {
+    transition: none;
+  }
+  .exp-modal {
+    transform: none;
+  }
+}

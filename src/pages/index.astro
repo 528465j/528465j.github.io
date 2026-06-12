@@ -5,6 +5,7 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import ContactBlock from "../components/ContactBlock.astro";
+import ExperienceDetail from "../components/ExperienceDetail.astro";
 import WorkRightsChip from "../components/WorkRightsChip.astro";
 import profile from "../data/profile.json";
 import skills from "../data/skills.json";
@@ -200,8 +201,8 @@ const sectionIndex = [
               <p class="timeline__org">
                 <b>{job.employer}</b> · {job.location}
               </p>
-              <a class="timeline__cta" href={`/experience/${job.slug}/`}>
-                Achievements
+              <a class="timeline__cta" href={`/experience/${job.slug}/`} data-exp-open={job.slug}>
+                Details | Achievements
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M5 12h14M13 6l6 6-6 6"></path>
                 </svg>
@@ -301,6 +302,28 @@ const sectionIndex = [
       </div>
     </div>
   </section>
+
+  <!-- EXPERIENCE DETAIL MODALS (change): opened by the timeline "Details |
+       Achievements" buttons; those buttons fall back to /experience/<slug>/ when
+       JS is off. The body matches the standalone page via the shared
+       ExperienceDetail component. Wired in initExperienceModals (Base.astro). -->
+  {
+    profile.experience.map((job) => (
+      <dialog class="exp-modal" data-exp-modal={job.slug} aria-labelledby={`exp-modal-title-${job.slug}`}>
+        <button class="exp-modal__close" type="button" data-exp-close aria-label={`Close ${job.title} details`}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div class="exp-modal__body">
+          <span class="eyebrow">Achievements</span>
+          <h2 class="exp-modal__title" id={`exp-modal-title-${job.slug}`}>{job.title}</h2>
+          <p class="exp-modal__lead"><b>{job.employer}</b> · {job.location} · {job.dates}</p>
+          <ExperienceDetail job={job} />
+        </div>
+      </dialog>
+    ))
+  }
 
   <ContactBlock />
 </Base>

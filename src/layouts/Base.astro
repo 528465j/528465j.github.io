@@ -685,6 +685,113 @@ const isHome = Astro.url.pathname === "/";
         };
       }
 
+      // Experience detail modals (change): the timeline "Details | Achievements"
+      // buttons (and the Assistant-Manager redirect link) open a native <dialog>
+      // with a pop-out animation and a blurred backdrop, instead of navigating.
+      // Without JS or without <dialog> support, the links navigate to
+      // /experience/<slug>/ as before (progressive enhancement).
+      let expModalCleanup = null;
+      function initExperienceModals() {
+        if (expModalCleanup) {
+          expModalCleanup();
+          expModalCleanup = null;
+        }
+        const dialogs = Array.from(document.querySelectorAll("[data-exp-modal]"));
+        const triggers = Array.from(document.querySelectorAll("[data-exp-open]"));
+        if (!dialogs.length || !triggers.length) return;
+        if (typeof HTMLDialogElement === "undefined" || !document.createElement("dialog").showModal) return;
+
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const bySlug = {};
+        dialogs.forEach((d) => (bySlug[d.getAttribute("data-exp-modal")] = d));
+        let current = null;
+
+        function lockScroll(on) {
+          document.documentElement.style.overflow = on ? "hidden" : "";
+        }
+        function finalClose(d) {
+          if (d.open) d.close();
+          if (current === d) {
+            current = null;
+            lockScroll(false);
+          }
+        }
+        function closeModal(d) {
+          if (!d || !d.open) return;
+          d.classList.remove("is-open");
+          if (reduce) {
+            finalClose(d);
+            return;
+          }
+          let done = false;
+          const finish = () => {
+            if (done) return;
+            done = true;
+            d.removeEventListener("transitionend", onEnd);
+            finalClose(d);
+          };
+          const onEnd = (e) => {
+            if (e.target === d && e.propertyName === "transform") finish();
+          };
+          d.addEventListener("transitionend", onEnd);
+          window.setTimeout(finish, 420); // fallback if transitionend is missed
+        }
+        function openModal(slug) {
+          const d = bySlug[slug];
+          if (!d || d.open) return;
+          // Swap instantly if another modal is open (e.g. the AM -> Consultant link).
+          if (current && current !== d) {
+            current.classList.remove("is-open");
+            finalClose(current);
+          }
+          d.showModal();
+          current = d;
+          lockScroll(true);
+          if (reduce) {
+            d.classList.add("is-open");
+            return;
+          }
+          void d.offsetWidth; // commit the closed (pre-animation) styles before animating in
+          d.classList.add("is-open");
+        }
+
+        function onTriggerClick(e) {
+          const slug = e.currentTarget.getAttribute("data-exp-open");
+          if (!bySlug[slug]) return; // no modal for this slug -> let the link navigate
+          e.preventDefault();
+          openModal(slug);
+        }
+        triggers.forEach((t) => t.addEventListener("click", onTriggerClick));
+
+        const bound = [];
+        dialogs.forEach((d) => {
+          const onBackdrop = (e) => {
+            if (e.target === d) closeModal(d); // click on the exposed/blurred backdrop
+          };
+          const onCancel = (e) => {
+            e.preventDefault(); // animate the Escape-key close instead of an instant close
+            closeModal(d);
+          };
+          const closeBtn = d.querySelector("[data-exp-close]");
+          const onClose = () => closeModal(d);
+          d.addEventListener("click", onBackdrop);
+          d.addEventListener("cancel", onCancel);
+          if (closeBtn) closeBtn.addEventListener("click", onClose);
+          bound.push({ d, onBackdrop, onCancel, closeBtn, onClose });
+        });
+
+        expModalCleanup = function () {
+          triggers.forEach((t) => t.removeEventListener("click", onTriggerClick));
+          bound.forEach(({ d, onBackdrop, onCancel, closeBtn, onClose }) => {
+            d.removeEventListener("click", onBackdrop);
+            d.removeEventListener("cancel", onCancel);
+            if (closeBtn) closeBtn.removeEventListener("click", onClose);
+            if (d.open) d.close();
+          });
+          lockScroll(false);
+        };
+      }
+
       function init() {
         applyTheme();
         initThemeToggle();
@@ -697,6 +804,7 @@ const isHome = Astro.url.pathname === "/";
         initIntro();
         initDots();
         initCarousel();
+        initExperienceModals();
         initScrollSpy();
       }
 

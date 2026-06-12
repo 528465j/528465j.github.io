@@ -11,8 +11,11 @@ interface Mode {
 }
 interface Props {
   modes: Mode[];
+  caption?: string;
 }
-const { modes } = Astro.props;
+const { modes, caption = "Self-authored workflow diagrams" } = Astro.props;
+// A single-mode gallery shows no toggle (change: RAG project).
+const multiMode = modes.length > 1;
 ---
 
 <div
@@ -20,22 +23,24 @@ const { modes } = Astro.props;
   data-carousel
   role="group"
   aria-roledescription="carousel"
-  aria-label="Self-authored workflow diagrams"
+  aria-label={caption}
 >
-  <div class="carousel__toggle" role="group" aria-label="Slideshow mode">
-    {
-      modes.map((m, i) => (
-        <button
-          class="carousel__mode"
-          type="button"
-          data-carousel-mode={i}
-          aria-pressed={i === 0 ? "true" : "false"}
-        >
-          {m.label}
-        </button>
-      ))
-    }
-  </div>
+  {
+    multiMode && (
+      <div class="carousel__toggle" role="group" aria-label="Slideshow mode">
+        {modes.map((m, i) => (
+          <button
+            class="carousel__mode"
+            type="button"
+            data-carousel-mode={i}
+            aria-pressed={i === 0 ? "true" : "false"}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
 
   <div class="carousel__viewport">
     {
@@ -71,7 +76,7 @@ const { modes } = Astro.props;
   <div class="carousel__footer">
     <div class="carousel__dots" data-carousel-dots></div>
     <p class="carousel__cap">
-      Self-authored workflow diagrams<span class="carousel__counter" data-carousel-caption></span>
+      {caption}<span class="carousel__counter" data-carousel-caption></span>
     </p>
   </div>
 </div>

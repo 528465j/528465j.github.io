@@ -1,9 +1,8 @@
 ---
-import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
-import ProjectCard from "../../components/ProjectCard.astro";
 import ContactBlock from "../../components/ContactBlock.astro";
 import Breadcrumb from "../../components/Breadcrumb.astro";
+import ExperienceDetail from "../../components/ExperienceDetail.astro";
 import profile from "../../data/profile.json";
 
 export async function getStaticPaths() {
@@ -11,12 +10,6 @@ export async function getStaticPaths() {
 }
 
 const { job } = Astro.props;
-const projects = (await getCollection("projects"))
-  .filter((p) => p.data.employer === job.slug)
-  .sort((a, b) => a.data.order - b.data.order);
-
-const themeKicker = (themes: string[]) =>
-  themes[0] === "technical-ai-ml" ? "Technical · AI / ML" : "Analytics · BI";
 ---
 
 <Base
@@ -40,17 +33,7 @@ const themeKicker = (themes: string[]) =>
 
   <section class="section">
     <div class="container">
-      {
-        projects.length > 0 ? (
-          <div class="projects">
-            {projects.map((p) => (
-              <ProjectCard project={p} kicker={themeKicker(p.data.themes)} />
-            ))}
-          </div>
-        ) : (
-          <p class="evidence__note">Work from this role is presented across the project pages.</p>
-        )
-      }
+      <ExperienceDetail job={job} />
     </div>
   </section>
 
