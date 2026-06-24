@@ -47,7 +47,7 @@ const hasLenses = !!data.lenses;
     {
       data.gallery && data.gallery.length > 0 ? (
         <div class="container">
-          <Carousel modes={data.gallery} caption={data.galleryCaption} />
+          <Carousel modes={data.gallery} caption={data.galleryCaption} disclaimer={data.galleryDisclaimer} />
         </div>
       ) : data.diagram ? (
         <div class="container">

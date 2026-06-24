@@ -48,6 +48,20 @@ const isHome = Astro.url.pathname === "/";
         } catch (e) {
           document.documentElement.setAttribute("data-theme", "dark");
         }
+        // Arm the boot intro (change 2) before first paint so its curtain covers
+        // the home page with no flash. Only on a fresh load of the home page (not
+        // on in-site navigation) and never under reduced motion. A failsafe always
+        // reveals it, so a failed boot script can never trap the visitor.
+        try {
+          var reduceMotion =
+            window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          if (location.pathname === "/" && !reduceMotion) {
+            document.documentElement.classList.add("booting");
+            window.setTimeout(function () {
+              document.documentElement.classList.remove("booting");
+            }, 12000);
+          }
+        } catch (e) {}
       })();
     </script>
 
@@ -372,6 +386,116 @@ const isHome = Astro.url.pathname === "/";
         });
       }
 
+      // Boot intro (change 2 + 3): the "ERROR 404: Conventional Analyst not found."
+      // decoding screen, then the diagonal box reveal of the home page and the name
+      // entrance. Runs only when the head script armed it (html.booting: home page,
+      // fresh load, motion ok). 3-phase scramble (numbers -> symbols -> text),
+      // each pass <= 3s, a 4s hold, then the reverse pass; then the curtain wipes
+      // away top-left -> bottom-right and the name halves converge.
+      let bootCleanup = null;
+      function initBoot() {
+        if (bootCleanup) {
+          bootCleanup();
+          bootCleanup = null;
+        }
+        const html = document.documentElement;
+        const boot = document.querySelector("[data-boot]");
+        if (!boot || !html.classList.contains("booting")) return;
+        const textEl = boot.querySelector("[data-boot-text]");
+        const name = document.querySelector("[data-intro-name]");
+        if (!textEl) {
+          html.classList.remove("booting"); // nothing to animate: just reveal
+          return;
+        }
+
+        const FINAL = "ERROR 404: Conventional Analyst not found.";
+        const DIGITS = "0123456789";
+        const SYMBOLS = "!<>-_\\/[]{}=+*^?#@%&$";
+        const chars = FINAL.split("");
+        const N = chars.length;
+        const SPREAD = 1.2; // s: the left-to-right sweep
+        const SETTLE = 1.0; // s: each char's digit -> symbol -> final settle
+        const PHASE_DUR = SPREAD + SETTLE; // ~2.2s per pass (under the 3s budget)
+        const HOLD = 4000; // ms: fully-decoded hold
+        const REVEAL = 1000; // ms: the box-reveal wipe
+
+        let raf = 0;
+        const timers = [];
+
+        function rnd(set) {
+          return set.charAt((Math.random() * set.length) | 0);
+        }
+        // Phase mapping: final at p>=1, symbols in [0.5,1), digits in [0,0.5);
+        // before a char's window it is still scrambling (in) or already gone (out).
+        function glyph(p, ch, phase) {
+          if (p >= 1) return ch;
+          if (p >= 0.5) return rnd(SYMBOLS);
+          if (p >= 0) return rnd(DIGITS);
+          return phase === "in" ? rnd(DIGITS) : "";
+        }
+        function build(elapsed, phase) {
+          let out = "";
+          for (let i = 0; i < N; i++) {
+            const ch = chars[i];
+            if (ch === " ") {
+              out += " ";
+              continue;
+            }
+            let p;
+            if (phase === "in") {
+              p = (elapsed - (i / N) * SPREAD) / SETTLE; // left -> right reveal
+            } else {
+              p = 1 - (elapsed - ((N - 1 - i) / N) * SPREAD) / SETTLE; // right -> left exit
+            }
+            out += glyph(p, ch, phase);
+          }
+          return out;
+        }
+        function runPhase(phase, onDone) {
+          const start = performance.now();
+          let last = 0;
+          function frame(now) {
+            const elapsed = (now - start) / 1000;
+            if (now - last >= 45) {
+              last = now; // ~22fps glyph flicker: the decoding look without jitter
+              textEl.textContent = build(elapsed, phase);
+            }
+            if (elapsed < PHASE_DUR) {
+              raf = requestAnimationFrame(frame);
+            } else {
+              textEl.textContent = phase === "in" ? FINAL : "";
+              onDone();
+            }
+          }
+          raf = requestAnimationFrame(frame);
+        }
+        function reveal() {
+          // Start the name entrance first so its halves begin hidden, then wipe the
+          // curtain away diagonally to expose the home page.
+          if (name) name.classList.add("is-entering");
+          void boot.offsetWidth;
+          boot.classList.add("is-revealing");
+          const t = window.setTimeout(() => {
+            html.classList.remove("booting"); // unlock scroll + drop the curtain
+          }, REVEAL);
+          timers.push(t);
+        }
+
+        try {
+          runPhase("in", () => {
+            const t = window.setTimeout(() => runPhase("out", reveal), HOLD);
+            timers.push(t);
+          });
+        } catch (e) {
+          html.classList.remove("booting"); // never trap the visitor on an error
+        }
+
+        bootCleanup = function () {
+          if (raf) cancelAnimationFrame(raf);
+          timers.forEach((t) => window.clearTimeout(t));
+        };
+      }
+
       let introCleanup = null;
       function initIntro() {
         if (introCleanup) {
@@ -513,6 +637,11 @@ const isHome = Astro.url.pathname === "/";
         const nextBtn = root.querySelector("[data-carousel-next]");
         const dotsWrap = root.querySelector("[data-carousel-dots]");
         const caption = root.querySelector("[data-carousel-caption]");
+        const playPauseBtn = root.querySelector("[data-carousel-playpause]");
+        const enlargeBtn = root.querySelector("[data-carousel-enlarge]");
+        const lightbox = root.querySelector("[data-carousel-lightbox]");
+        const dialogOk =
+          typeof HTMLDialogElement !== "undefined" && !!document.createElement("dialog").showModal;
         const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const DELAY = 3000;
 
@@ -531,12 +660,17 @@ const isHome = Astro.url.pathname === "/";
             t.appendChild(clone);
           }
         });
+        // A single-image gallery (e.g. the Pricing project) has no sliding: hide the
+        // arrows, dots and pause toggle, and skip auto-advance. Enlarge stays.
+        const single = realCount.every((c) => c <= 1);
 
         let mode = 0,
           index = 0,
           timer = 0,
           animating = false,
-          animTimer = 0;
+          animTimer = 0,
+          userPaused = false, // set by the pause/play toggle
+          lbOpen = false; // true while the Enlarge lightbox is open
 
         function setTransform(track, idx, animate) {
           if (!animate) track.style.transition = "none";
@@ -571,7 +705,7 @@ const isHome = Astro.url.pathname === "/";
           if (dotsWrap) {
             Array.from(dotsWrap.children).forEach((d, i) => d.classList.toggle("is-active", i === shown));
           }
-          if (caption) caption.textContent = " · " + (shown + 1) + " / " + n;
+          if (caption) caption.textContent = n > 1 ? " · " + (shown + 1) + " / " + n : "";
         }
         function buildDots() {
           if (!dotsWrap) return;
@@ -640,13 +774,74 @@ const isHome = Astro.url.pathname === "/";
           }
         }
         function start() {
-          if (reduce) return;
+          if (reduce || userPaused || lbOpen || single) return; // honour pause/lightbox/single
           stop();
           timer = window.setInterval(next, DELAY);
         }
         function restart() {
           stop();
           start();
+        }
+
+        // Manual pause/play toggle (change 4). Updates the icon (CSS swaps the
+        // pause/play glyph off the is-paused class) and the accessible label.
+        function setPaused(p) {
+          userPaused = p;
+          if (playPauseBtn) {
+            playPauseBtn.classList.toggle("is-paused", p);
+            playPauseBtn.setAttribute("aria-pressed", String(p));
+            playPauseBtn.setAttribute("aria-label", p ? "Play slideshow" : "Pause slideshow");
+          }
+          if (p) stop();
+          else start();
+        }
+
+        // Enlarge lightbox (change 4): a native <dialog> showing the current
+        // mode's slides at readable size, with its own prev/next. Pauses
+        // auto-advance while open and resumes (honouring the manual pause) on close.
+        let lbImgs = [],
+          lbIndex = 0;
+        function renderLightbox() {
+          if (!lightbox) return;
+          const img = lightbox.querySelector("[data-lightbox-img]");
+          const cap = lightbox.querySelector("[data-lightbox-cap]");
+          const navs = lightbox.querySelectorAll("[data-lightbox-prev],[data-lightbox-next]");
+          const n = lbImgs.length;
+          if (!n) return;
+          const shown = ((lbIndex % n) + n) % n;
+          const cur = lbImgs[shown];
+          if (img) {
+            img.src = cur.src;
+            img.alt = cur.alt;
+          }
+          if (cap) cap.textContent = shown + 1 + " / " + n;
+          navs.forEach((b) => (b.hidden = n <= 1));
+        }
+        function openLightbox() {
+          if (!lightbox || !dialogOk) return;
+          const slides = Array.from(tracks[mode].querySelectorAll("[data-carousel-slide]"));
+          lbImgs = slides.map((im) => ({
+            src: im.currentSrc || im.getAttribute("src"),
+            alt: im.getAttribute("alt") || "",
+          }));
+          if (!lbImgs.length) return;
+          const n = realCount[mode];
+          lbIndex = ((index % n) + n) % n;
+          renderLightbox();
+          lbOpen = true;
+          stop();
+          lightbox.showModal();
+        }
+        function closeLightbox() {
+          lbOpen = false;
+          if (lightbox && lightbox.open) lightbox.close();
+          start();
+        }
+        function lbStep(d) {
+          const n = lbImgs.length;
+          if (n <= 1) return;
+          lbIndex = (((lbIndex + d) % n) + n) % n;
+          renderLightbox();
         }
 
         tracks.forEach((t) => t.addEventListener("transitionend", onTransitionEnd));
@@ -666,6 +861,40 @@ const isHome = Astro.url.pathname === "/";
             next();
             restart();
           });
+        // Single-image gallery: nothing to navigate, so hide the arrows and dots.
+        if (single) {
+          if (prevBtn) prevBtn.hidden = true;
+          if (nextBtn) nextBtn.hidden = true;
+          if (dotsWrap) dotsWrap.hidden = true;
+        }
+        // Pause/play: only meaningful when something can auto-advance. Hide the
+        // toggle under reduced motion or when every mode has a single slide.
+        const canAutoplay = !reduce && !single;
+        if (playPauseBtn) {
+          if (canAutoplay) playPauseBtn.addEventListener("click", () => setPaused(!userPaused));
+          else playPauseBtn.hidden = true;
+        }
+        // Enlarge: needs a working <dialog>. Otherwise hide the button.
+        if (enlargeBtn) {
+          if (lightbox && dialogOk) enlargeBtn.addEventListener("click", openLightbox);
+          else enlargeBtn.hidden = true;
+        }
+        if (lightbox && dialogOk) {
+          const lbPrev = lightbox.querySelector("[data-lightbox-prev]");
+          const lbNext = lightbox.querySelector("[data-lightbox-next]");
+          const lbClose = lightbox.querySelector("[data-lightbox-close]");
+          if (lbPrev) lbPrev.addEventListener("click", () => lbStep(-1));
+          if (lbNext) lbNext.addEventListener("click", () => lbStep(1));
+          if (lbClose) lbClose.addEventListener("click", closeLightbox);
+          lightbox.addEventListener("cancel", (e) => {
+            e.preventDefault(); // animate/handle the Escape close ourselves
+            closeLightbox();
+          });
+          lightbox.addEventListener("click", (e) => {
+            if (e.target === lightbox) closeLightbox(); // click on the backdrop padding
+          });
+        }
+
         root.addEventListener("mouseenter", stop);
         root.addEventListener("mouseleave", start);
         root.addEventListener("focusin", stop);
@@ -682,6 +911,36 @@ const isHome = Astro.url.pathname === "/";
         carouselCleanup = function () {
           stop();
           if (animTimer) window.clearTimeout(animTimer);
+          if (lightbox && lightbox.open) lightbox.close();
+        };
+      }
+
+      // On-card preview slideshows (change 4): the masked Telstra dashboard cards
+      // cross-fade through their gallery images. Static first image without JS or
+      // under reduced motion (and when a card has a single image).
+      let cardPreviewCleanup = null;
+      function initCardPreviews() {
+        if (cardPreviewCleanup) {
+          cardPreviewCleanup();
+          cardPreviewCleanup = null;
+        }
+        const previews = Array.from(document.querySelectorAll("[data-card-preview]"));
+        if (!previews.length) return;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const timers = [];
+        previews.forEach((pv) => {
+          const imgs = Array.from(pv.querySelectorAll(".card__preview-img"));
+          if (imgs.length <= 1 || reduce) return;
+          let i = 0;
+          const t = window.setInterval(() => {
+            imgs[i].classList.remove("is-active");
+            i = (i + 1) % imgs.length;
+            imgs[i].classList.add("is-active");
+          }, 2800);
+          timers.push(t);
+        });
+        cardPreviewCleanup = function () {
+          timers.forEach((t) => window.clearInterval(t));
         };
       }
 
@@ -794,6 +1053,7 @@ const isHome = Astro.url.pathname === "/";
 
       function init() {
         applyTheme();
+        initBoot();
         initThemeToggle();
         initNav();
         initProjectsFlyout();
@@ -804,6 +1064,7 @@ const isHome = Astro.url.pathname === "/";
         initIntro();
         initDots();
         initCarousel();
+        initCardPreviews();
         initExperienceModals();
         initScrollSpy();
       }

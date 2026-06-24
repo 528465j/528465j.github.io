@@ -7,6 +7,15 @@ roles: ["data-analyst", "business-analyst"]
 employer: "telstra-consultant"
 metrics: ["Decision-ready reporting from three inputs", "Safety guards, target projections and trend cues", "Volatility indicator for stability tracking"]
 evidence: { type: "confidential", note: "Delivered in role at Telstra; presented through explanation." }
+gallery:
+  - label: "NPS reporting dashboard"
+    images:
+      - "/screenshots/nps-reporting/nps-1.png"
+      - "/screenshots/nps-reporting/nps-2.png"
+      - "/screenshots/nps-reporting/nps-3.png"
+galleryCaption: "NPS reporting in Power BI"
+galleryDisclaimer: "Screenshots are masked due to NDA"
+cardPreview: true
 order: 11
 ---
 

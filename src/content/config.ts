@@ -44,6 +44,14 @@ const projects = defineCollection({
     // Caption shown beneath a `gallery` carousel (defaults in Carousel.astro).
     // A single-mode gallery renders no toggle.
     galleryCaption: z.string().optional(),
+    // Optional disclaimer rendered next to a `gallery` carousel (and its on-card
+    // preview), e.g. "Screenshots are masked due to NDA" for the confidential
+    // Telstra dashboard projects. Rendered only when present.
+    galleryDisclaimer: z.string().optional(),
+    // Opt-in: show an auto-rotating mini preview of the gallery images on the
+    // project card itself (used by the masked Telstra dashboard projects). Kept
+    // off by default so diagram-gallery projects (agentic AI, RAG) are unaffected.
+    cardPreview: z.boolean().default(false),
     featured: z.boolean().default(false),
     order: z.number().default(50),
     lenses: z.object({

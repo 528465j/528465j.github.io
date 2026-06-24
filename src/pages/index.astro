@@ -45,13 +45,23 @@ const sectionIndex = [
 ---
 
 <Base title="Jatin Jassi | Data, Analytics & AI" description={profile.tagline_default}>
-  <!-- INTRO COVER (home only): centred name + subtitle over five transparent GIFs
-       that pop in one at a time behind the name. Collapses on scroll. -->
+  <!-- BOOT INTRO (change 2, home only, every fresh load): a decoding-typography
+       "ERROR 404: Conventional Analyst not found." reveals (<=3s), holds 4s, then
+       un-decodes in reverse; the blank screen then box-reveals the home page
+       diagonally (top-left -> bottom-right). Armed pre-paint by the head script
+       in Base.astro (so no flash) and driven by initBoot(). Skipped without JS
+       and under reduced motion; a head-script failsafe always reveals it. -->
+  <div class="boot" data-boot aria-hidden="true">
+    <p class="boot__text" data-boot-text></p>
+  </div>
+
+  <!-- INTRO COVER (home only): centred name over five transparent GIFs that pop in
+       one at a time behind the name. Collapses on scroll. -->
   <section class="intro" aria-label="Introduction">
     <!-- Static vector-dot background (change 6): a still field of dots whose size
          and shade co-vary in a subtle macroscopic wave (bigger = lighter, smaller
          = darker), 70% transparent. Drawn once by initDots() in Base.astro; purely
-         decorative and sits behind the name/subtitle/GIFs with no interaction. -->
+         decorative and sits behind the name/GIFs with no interaction. -->
     <canvas class="intro__dots" data-dots aria-hidden="true"></canvas>
 
     <div class="intro__gifs" aria-hidden="true">
@@ -63,8 +73,33 @@ const sectionIndex = [
     </div>
 
     <div class="intro__content">
-      <h1 class="intro__name">Jatin Jassi</h1>
-      <p class="intro__subtitle">Data, AI and Analytics Professional</p>
+      <!-- Name entrance (change 3): a centred accent line draws across, splits
+           into a top and bottom rule, then the two name halves converge from the
+           left and right (inspired by the anime.js ml5 timeline, rebuilt in CSS).
+           Triggered by initBoot() after the box reveal; visible at rest without
+           JS / under reduced motion. aria-label carries the real reading. -->
+      <h1 class="intro__name" data-intro-name aria-label="Jatin Jassi">
+        <span class="intro__name-line intro__name-line--top" aria-hidden="true"></span>
+        <span class="intro__name-word intro__name-word--left" aria-hidden="true">Jatin</span>
+        {" "}
+        <span class="intro__name-word intro__name-word--right" aria-hidden="true">Jassi</span>
+        <span class="intro__name-line intro__name-line--bottom" aria-hidden="true"></span>
+      </h1>
+    </div>
+
+    <!-- Intro info box (change 1.2): a two-segment card pinned bottom-centre on the
+         cover, fading out with the intro collapse. -->
+    <div class="intro__facts">
+      <div class="intro__fact">
+        <p class="intro__fact-head">Based in</p>
+        <p class="intro__fact-value"><strong>Sydney, Australia</strong></p>
+        <p class="intro__fact-note">[willing to relocate]</p>
+      </div>
+      <span class="intro__fact-div" aria-hidden="true"></span>
+      <div class="intro__fact">
+        <p class="intro__fact-head">Domain</p>
+        <p class="intro__fact-value">Data, AI and Analytics</p>
+      </div>
     </div>
 
     <!-- Scroll cue (change 1): bold label + a compact circle holding the arrow.

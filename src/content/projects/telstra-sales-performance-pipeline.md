@@ -7,6 +7,15 @@ roles: ["data-analyst", "business-analyst"]
 employer: "telstra-consultant"
 metrics: ["8 stores and 8 core products, daily refresh", "Store rating lifted from 2 stars to 3 stars (Aug 2025)", "Broke a four-month low-performance streak"]
 evidence: { type: "confidential", note: "Delivered in role at Telstra; presented through explanation." }
+gallery:
+  - label: "Sales-performance dashboard"
+    images:
+      - "/screenshots/sales-performance/sales-1.png"
+      - "/screenshots/sales-performance/sales-2.png"
+      - "/screenshots/sales-performance/sales-3.png"
+galleryCaption: "Sales-performance in Power BI"
+galleryDisclaimer: "Screenshots are masked due to NDA"
+cardPreview: true
 order: 13
 ---
 

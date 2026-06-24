@@ -1,10 +1,11 @@
 ---
 // Multi-mode slideshow (change 4) used by the confidential agentic-AI project,
-// which can only be shown through self-authored workflow diagrams. Each mode is a
-// labelled, ordered set of images; a segmented toggle switches between them.
-// Auto-advance, manual arrows and dots are wired in initCarousel (Base.astro).
+// the RAG project, and the masked Telstra dashboard projects. Each mode is a
+// labelled, ordered set of images; a segmented toggle switches between them (a
+// single-mode gallery shows no toggle). Auto-advance, manual arrows, dots, a
+// pause/play toggle and an Enlarge lightbox are wired in initCarousel (Base.astro).
 // Progressive enhancement: server-renders the first track + first slide visible,
-// and the JS-only controls (toggle, arrows, dots) are hidden without JS.
+// and the JS-only controls are hidden without JS.
 interface Mode {
   label: string;
   images: string[];
@@ -12,8 +13,11 @@ interface Mode {
 interface Props {
   modes: Mode[];
   caption?: string;
+  // Optional note rendered above the viewport, e.g. "Screenshots are masked due
+  // to NDA" for the confidential dashboard projects.
+  disclaimer?: string;
 }
-const { modes, caption = "Self-authored workflow diagrams" } = Astro.props;
+const { modes, caption = "Self-authored workflow diagrams", disclaimer } = Astro.props;
 // A single-mode gallery shows no toggle (change: RAG project).
 const multiMode = modes.length > 1;
 ---
@@ -25,6 +29,18 @@ const multiMode = modes.length > 1;
   aria-roledescription="carousel"
   aria-label={caption}
 >
+  {
+    disclaimer && (
+      <p class="carousel__disclaimer">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        {disclaimer}
+      </p>
+    )
+  }
+
   {
     multiMode && (
       <div class="carousel__toggle" role="group" aria-label="Slideshow mode">
@@ -50,7 +66,7 @@ const multiMode = modes.length > 1;
             <img
               class="carousel__slide"
               src={src}
-              alt={`${m.label}: diagram ${j + 1} of ${m.images.length}`}
+              alt={`${m.label}, ${j + 1} of ${m.images.length}`}
               data-carousel-slide={j}
               loading="lazy"
               decoding="async"
@@ -71,6 +87,29 @@ const multiMode = modes.length > 1;
         <path d="m9 18 6-6-6-6"></path>
       </svg>
     </button>
+
+    <!-- Overlay controls (change 4): a circular pause/play toggle and an Enlarge
+         button. Hidden without JS; the pause toggle is also hidden when there is
+         nothing to auto-advance (single image or reduced motion). -->
+    <div class="carousel__controls">
+      <button class="carousel__ctrl carousel__playpause" type="button" data-carousel-playpause aria-pressed="false" aria-label="Pause slideshow">
+        <svg class="carousel__ctrl-ico carousel__ctrl-ico--pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <rect x="6" y="5" width="4" height="14" rx="1"></rect>
+          <rect x="14" y="5" width="4" height="14" rx="1"></rect>
+        </svg>
+        <svg class="carousel__ctrl-ico carousel__ctrl-ico--play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5v14l11-7z"></path>
+        </svg>
+      </button>
+      <button class="carousel__ctrl carousel__enlarge" type="button" data-carousel-enlarge aria-label="Enlarge screenshot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+          <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+          <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+          <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+        </svg>
+      </button>
+    </div>
   </div>
 
   <div class="carousel__footer">
@@ -79,4 +118,28 @@ const multiMode = modes.length > 1;
       {caption}<span class="carousel__counter" data-carousel-caption></span>
     </p>
   </div>
+
+  <!-- Enlarge lightbox (change 4): a native <dialog> showing the current slide at
+       readable size, with its own prev/next. Hidden/inert without JS or <dialog>
+       support (the Enlarge button is hidden then). Wired in initCarousel. -->
+  <dialog class="lightbox" data-carousel-lightbox aria-label="Enlarged screenshot">
+    <button class="lightbox__close" type="button" data-lightbox-close aria-label="Close enlarged view">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+    <button class="lightbox__nav lightbox__nav--prev" type="button" data-lightbox-prev aria-label="Previous screenshot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m15 18-6-6 6-6"></path>
+      </svg>
+    </button>
+    <img class="lightbox__img" data-lightbox-img alt="" />
+    <button class="lightbox__nav lightbox__nav--next" type="button" data-lightbox-next aria-label="Next screenshot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m9 18 6-6-6-6"></path>
+      </svg>
+    </button>
+    {disclaimer && <p class="lightbox__disclaimer">{disclaimer}</p>}
+    <p class="lightbox__cap" data-lightbox-cap></p>
+  </dialog>
 </div>

@@ -7,6 +7,13 @@ roles: ["data-analyst", "business-analyst"]
 employer: "telstra-consultant"
 metrics: ["Faster frontline deal conversations", "Helped consultants exceed KPIs by about 16%"]
 evidence: { type: "confidential", note: "Delivered in role at Telstra; presented through explanation." }
+gallery:
+  - label: "Pricing and promo lookup"
+    images:
+      - "/screenshots/pricing-promo/pricing-1.png"
+galleryCaption: "Pricing and promo lookup in Power BI"
+galleryDisclaimer: "Screenshots are masked due to NDA"
+cardPreview: true
 order: 14
 ---
 

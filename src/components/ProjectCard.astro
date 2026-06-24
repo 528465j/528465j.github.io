@@ -19,9 +19,38 @@ const href = useLens ? `/projects/${slug}/?lens=${useLens}` : `/projects/${slug}
 const metrics = data.metrics ?? [];
 const headline = metrics[0];
 const extra = metrics.slice(1);
+
+// On-card preview (change 4): the masked Telstra dashboard projects opt in via
+// `cardPreview` and show an auto-rotating thumbnail of their gallery's first mode.
+const previewImages = (data.cardPreview && data.gallery?.[0]?.images) || [];
 ---
 
 <a class="card" href={href} data-reveal>
+  {
+    previewImages.length > 0 && (
+      <div class="card__preview" data-card-preview aria-hidden="true">
+        <div class="card__preview-frame">
+          {previewImages.map((src, i) => (
+            <img
+              class:list={["card__preview-img", { "is-active": i === 0 }]}
+              src={src}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          ))}
+        </div>
+        <span class="card__preview-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          NDA
+        </span>
+      </div>
+    )
+  }
+
   <div class="card__top">
     <span class="card__kicker">{kicker ?? "Project"}</span>
     {data.featured && <span class="card__featured">Featured</span>}
