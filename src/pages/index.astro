@@ -46,10 +46,10 @@ const sectionIndex = [
 
 <Base title="Jatin Jassi | Data, Analytics & AI" description={profile.tagline_default}>
   <!-- BOOT INTRO (change 2, home only, every fresh load): a decoding-typography
-       "ERROR 404: Conventional Analyst not found." decodes in (~0.9s), holds
+       "ERROR 404: Conventional Analyst not found." decodes in (~1.5s), holds
        briefly, then un-decodes in reverse; the blank screen box-reveals the home
-       page diagonally (top-left -> bottom-right). The whole sequence is under 3s
-       (~2.7s end to end). Armed pre-paint by the head script
+       page diagonally (top-left -> bottom-right). The whole sequence runs ~4.5s
+       end to end. Armed pre-paint by the head script
        in Base.astro (so no flash) and driven by initBoot(). Skipped without JS
        and under reduced motion; a head-script failsafe always reveals it. -->
   <div class="boot" data-boot aria-hidden="true">
