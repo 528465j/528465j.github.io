@@ -2239,9 +2239,10 @@ html.js body.has-intro.at-top .topbar:focus-within {
    Boot intro (change 2): the "ERROR 404" decoding screen and the
    diagonal box reveal of the home page. Armed pre-paint by the head
    script (html.booting) so the curtain covers the page from first
-   paint with no flash; initBoot() runs the 3-phase scramble (in,
-   4s hold, reverse out) then adds .is-revealing to wipe the curtain
-   away diagonally (top-left -> bottom-right). Sits just below the
+   paint with no flash; initBoot() runs the 3-phase scramble (in
+   ~0.9s, a brief ~0.35s hold, reverse out ~0.75s) then adds
+   .is-revealing to wipe the curtain away diagonally over 0.7s
+   (top-left -> bottom-right); ~2.7s end to end. Sits just below the
    grain/vignette so a faint CRT texture reads over the terminal.
    Home page only; never shown without JS or under reduced motion. */
 .boot {
@@ -2252,9 +2253,11 @@ html.js body.has-intro.at-top .topbar:focus-within {
   place-items: center;
   padding: var(--space-lg);
   background: var(--bg);
-  /* full cover; the diagonal wipe clears the bottom-right corner last */
+  /* full cover; the diagonal wipe clears the bottom-right corner last.
+     0.7s matches REVEAL in initBoot() so the curtain is dropped exactly
+     when the wipe finishes (keep the two in sync). */
   clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-  transition: clip-path 1s cubic-bezier(0.76, 0, 0.24, 1);
+  transition: clip-path 0.7s cubic-bezier(0.76, 0, 0.24, 1);
 }
 html.booting .boot {
   display: grid;

@@ -59,7 +59,7 @@ const isHome = Astro.url.pathname === "/";
             document.documentElement.classList.add("booting");
             window.setTimeout(function () {
               document.documentElement.classList.remove("booting");
-            }, 12000);
+            }, 5000); // failsafe backstop, comfortably above the ~2.7s sequence
           }
         } catch (e) {}
       })();
@@ -389,9 +389,10 @@ const isHome = Astro.url.pathname === "/";
       // Boot intro (change 2 + 3): the "ERROR 404: Conventional Analyst not found."
       // decoding screen, then the diagonal box reveal of the home page and the name
       // entrance. Runs only when the head script armed it (html.booting: home page,
-      // fresh load, motion ok). 3-phase scramble (numbers -> symbols -> text),
-      // each pass <= 3s, a 4s hold, then the reverse pass; then the curtain wipes
-      // away top-left -> bottom-right and the name halves converge.
+      // fresh load, motion ok). 3-phase scramble (numbers -> symbols -> text). The
+      // whole sequence is kept under 3s (decode-in ~0.9s, a brief ~0.35s hold, the
+      // reverse un-decode-out ~0.75s, then the ~0.7s reveal wipe ~= 2.7s total);
+      // the curtain wipes away top-left -> bottom-right and the name halves converge.
       let bootCleanup = null;
       function initBoot() {
         if (bootCleanup) {
@@ -413,11 +414,17 @@ const isHome = Astro.url.pathname === "/";
         const SYMBOLS = "!<>-_\\/[]{}=+*^?#@%&$";
         const chars = FINAL.split("");
         const N = chars.length;
-        const SPREAD = 1.2; // s: the left-to-right sweep
-        const SETTLE = 1.0; // s: each char's digit -> symbol -> final settle
-        const PHASE_DUR = SPREAD + SETTLE; // ~2.2s per pass (under the 3s budget)
-        const HOLD = 4000; // ms: fully-decoded hold
-        const REVEAL = 1000; // ms: the box-reveal wipe
+        // Compressed timing (change): the whole sequence now lands ~2.7s (was
+        // ~9.4s) to meet the <=3s budget. Each pass is a left-to-right stagger
+        // (SPREAD) plus a per-char settle (SETTLE); the decode-in (~0.9s) and the
+        // un-decode-out (~0.75s) carry their own budgets, then a brief hold and
+        // the reveal wipe.
+        const IN_SPREAD = 0.5; // s: left-to-right sweep of the decode-in
+        const IN_SETTLE = 0.4; // s: each char's digit -> symbol -> final settle
+        const OUT_SPREAD = 0.4; // s: right-to-left sweep of the un-decode-out
+        const OUT_SETTLE = 0.35; // s
+        const HOLD = 350; // ms: brief fully-decoded hold
+        const REVEAL = 700; // ms: the box-reveal wipe (matches the CSS clip-path 0.7s)
 
         let raf = 0;
         const timers = [];
@@ -433,7 +440,7 @@ const isHome = Astro.url.pathname === "/";
           if (p >= 0) return rnd(DIGITS);
           return phase === "in" ? rnd(DIGITS) : "";
         }
-        function build(elapsed, phase) {
+        function build(elapsed, phase, spread, settle) {
           let out = "";
           for (let i = 0; i < N; i++) {
             const ch = chars[i];
@@ -443,24 +450,25 @@ const isHome = Astro.url.pathname === "/";
             }
             let p;
             if (phase === "in") {
-              p = (elapsed - (i / N) * SPREAD) / SETTLE; // left -> right reveal
+              p = (elapsed - (i / N) * spread) / settle; // left -> right reveal
             } else {
-              p = 1 - (elapsed - ((N - 1 - i) / N) * SPREAD) / SETTLE; // right -> left exit
+              p = 1 - (elapsed - ((N - 1 - i) / N) * spread) / settle; // right -> left exit
             }
             out += glyph(p, ch, phase);
           }
           return out;
         }
-        function runPhase(phase, onDone) {
+        function runPhase(phase, spread, settle, onDone) {
+          const dur = spread + settle;
           const start = performance.now();
           let last = 0;
           function frame(now) {
             const elapsed = (now - start) / 1000;
             if (now - last >= 45) {
               last = now; // ~22fps glyph flicker: the decoding look without jitter
-              textEl.textContent = build(elapsed, phase);
+              textEl.textContent = build(elapsed, phase, spread, settle);
             }
-            if (elapsed < PHASE_DUR) {
+            if (elapsed < dur) {
               raf = requestAnimationFrame(frame);
             } else {
               textEl.textContent = phase === "in" ? FINAL : "";
@@ -482,8 +490,11 @@ const isHome = Astro.url.pathname === "/";
         }
 
         try {
-          runPhase("in", () => {
-            const t = window.setTimeout(() => runPhase("out", reveal), HOLD);
+          runPhase("in", IN_SPREAD, IN_SETTLE, () => {
+            const t = window.setTimeout(
+              () => runPhase("out", OUT_SPREAD, OUT_SETTLE, reveal),
+              HOLD
+            );
             timers.push(t);
           });
         } catch (e) {
