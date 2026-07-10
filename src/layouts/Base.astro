@@ -59,7 +59,7 @@ const isHome = Astro.url.pathname === "/";
             document.documentElement.classList.add("booting");
             window.setTimeout(function () {
               document.documentElement.classList.remove("booting");
-            }, 7000); // failsafe backstop, comfortably above the ~4.5s sequence
+            }, 7000); // failsafe backstop, comfortably above the ~4.85s sequence
           }
         } catch (e) {}
       })();
@@ -390,8 +390,8 @@ const isHome = Astro.url.pathname === "/";
       // decoding screen, then the diagonal box reveal of the home page and the name
       // entrance. Runs only when the head script armed it (html.booting: home page,
       // fresh load, motion ok). 3-phase scramble (numbers -> symbols -> text). The
-      // whole sequence runs ~4.5s (decode-in ~1.5s, a ~0.6s hold, the reverse
-      // un-decode-out ~1.25s, then the ~1.15s reveal wipe ~= 4.5s total); the
+      // whole sequence runs ~4.85s (decode-in ~0.9s, a 2s hold, the reverse
+      // un-decode-out ~0.8s, then the ~1.15s reveal wipe ~= 4.85s total); the
       // curtain wipes away top-left -> bottom-right and the name halves converge.
       let bootCleanup = null;
       function initBoot() {
@@ -414,16 +414,16 @@ const isHome = Astro.url.pathname === "/";
         const SYMBOLS = "!<>-_\\/[]{}=+*^?#@%&$";
         const chars = FINAL.split("");
         const N = chars.length;
-        // Compressed timing (change): the whole sequence lands ~4.5s (was ~9.4s;
-        // an earlier ~2.7s pass read as too quick). Each pass is a left-to-right
-        // stagger (SPREAD) plus a per-char settle (SETTLE); the decode-in (~1.5s)
-        // and the un-decode-out (~1.25s) carry their own budgets, then a ~0.6s
-        // hold and the ~1.15s reveal wipe.
-        const IN_SPREAD = 0.83; // s: left-to-right sweep of the decode-in
-        const IN_SETTLE = 0.67; // s: each char's digit -> symbol -> final settle
-        const OUT_SPREAD = 0.67; // s: right-to-left sweep of the un-decode-out
-        const OUT_SETTLE = 0.58; // s
-        const HOLD = 600; // ms: fully-decoded hold
+        // Compressed timing (change): the whole sequence lands ~4.85s (was ~9.4s;
+        // rescaled iteratively with the candidate). Each pass is a left-to-right
+        // stagger (SPREAD) plus a per-char settle (SETTLE); the decode-in (~0.9s)
+        // and the un-decode-out (~0.8s) each stay under 1s, then a 2s hold and the
+        // ~1.15s reveal wipe.
+        const IN_SPREAD = 0.5; // s: left-to-right sweep of the decode-in
+        const IN_SETTLE = 0.4; // s: each char's digit -> symbol -> final settle
+        const OUT_SPREAD = 0.45; // s: right-to-left sweep of the un-decode-out
+        const OUT_SETTLE = 0.35; // s
+        const HOLD = 2000; // ms: fully-decoded hold
         const REVEAL = 1150; // ms: the box-reveal wipe (matches the CSS clip-path 1.15s)
 
         let raf = 0;

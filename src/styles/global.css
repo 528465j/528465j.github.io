@@ -2240,9 +2240,9 @@ html.js body.has-intro.at-top .topbar:focus-within {
    diagonal box reveal of the home page. Armed pre-paint by the head
    script (html.booting) so the curtain covers the page from first
    paint with no flash; initBoot() runs the 3-phase scramble (in
-   ~1.5s, a ~0.6s hold, reverse out ~1.25s) then adds .is-revealing
+   ~0.9s, a 2s hold, reverse out ~0.8s) then adds .is-revealing
    to wipe the curtain away diagonally over 1.15s (top-left ->
-   bottom-right); ~4.5s end to end. Sits just below the
+   bottom-right); ~4.85s end to end. Sits just below the
    grain/vignette so a faint CRT texture reads over the terminal.
    Home page only; never shown without JS or under reduced motion. */
 .boot {
