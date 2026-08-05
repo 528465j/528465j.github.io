@@ -19,7 +19,7 @@ gallery:
       - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-8.png"
       - "/diagrams/rag-architecture/AskTelstra_RAG_Architecture-9.png"
 galleryCaption: "Self-authored architecture diagrams"
-featured: true
+featured: false
 order: 2
 ---
 

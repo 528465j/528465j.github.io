@@ -18,7 +18,7 @@
     {
       "id": "sql-cloud-data-engineering",
       "label": "SQL, Cloud Warehousing and Data Engineering",
-      "items": ["SQL", "Data modelling", "Data warehousing", "Snowflake (including Snowpark)", "Azure Synapse", "Amazon Redshift (evaluated)", "ETL and ELT", "Salesforce data integration", "Git"]
+      "items": ["SQL", "Data modelling", "Data warehousing", "Snowflake (including Snowpark)", "Azure Synapse", "Amazon Redshift (evaluated)", "ETL and ELT", "Salesforce data integration", "Git", "Pydantic", "pytest"]
     },
     {
       "id": "business-analysis",
