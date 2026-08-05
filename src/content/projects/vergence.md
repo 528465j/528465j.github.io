@@ -7,6 +7,19 @@ extraTools: ["Pydantic", "pytest"]
 roles: ["data-engineer", "ai-ml-specialist", "data-scientist", "data-analyst"]
 metrics: ["7 controls registered, 7 run", "9 exceptions traced to 5 planted defects", "19 columns resolved from the registry on the second run, zero model calls", "Byte-identical exception register across three mapping paths", "16 tests, all passing"]
 evidence: { type: "repo", url: "https://github.com/528465j/vergence", note: "Public repository, MIT licence. Every figure is captured output held in docs/, produced against synthetic data; no real data has passed through the system." }
+gallery:
+  - label: "Pipeline architecture"
+    images:
+      - "/diagrams/vergence/vergence-01.png"
+      - "/diagrams/vergence/vergence-02.png"
+      - "/diagrams/vergence/vergence-03.png"
+      - "/diagrams/vergence/vergence-04.png"
+      - "/diagrams/vergence/vergence-05.png"
+      - "/diagrams/vergence/vergence-06.png"
+      - "/diagrams/vergence/vergence-07.png"
+      - "/diagrams/vergence/vergence-08.png"
+      - "/diagrams/vergence/vergence-09.png"
+galleryCaption: "Pipeline architecture and control flow"
 featured: true
 order: 0
 ---
