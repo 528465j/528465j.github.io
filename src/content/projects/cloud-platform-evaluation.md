@@ -19,7 +19,7 @@ lenses:
     lead: "Benchmarked Snowflake, Azure Synapse and Amazon Redshift for AI and ML workloads and large-scale analytics."
     highlights:
       - "Tested cross-platform ingestion (CSV, JSON, APIs), finding integration on Snowflake's zero-management architecture about 98% faster than Redshift."
-      - "Processed 10TB on Azure Synapse serverless pools and measured a 40% query-latency reduction against traditional warehousing."
+      - "Processed the four-year sales dataset on Azure Synapse serverless pools and measured a 40% query-latency reduction against traditional warehousing."
       - "Assessed ML readiness with Python and TensorFlow pipelines, with Snowflake Snowpark giving roughly 3x faster model training on structured data."
 ---
 
